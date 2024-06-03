@@ -1,5 +1,6 @@
 # edgettstools
 Kit de códigos para interactuar con IAs a través de la voz
+
 los códigos fueron modificados de:
 https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/cli/app.py
 # archivos necesarios
