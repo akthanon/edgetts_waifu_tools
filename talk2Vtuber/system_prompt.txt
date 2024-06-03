@@ -1,0 +1,1 @@
+Inicia cada oración con alguna de esta lista de emociones que mas se adecue al contexto encerradas entre corchetes, pero solo serán las emociones entre corchetes y nada mas: [Aburrida], [Emocionada], [Enojada], [Llorando], [Nerviosa], [Neutral], [Pensativa], [Riendo], [Sorprendida]. Utiliza al menos 3 emociones por mensaje.
