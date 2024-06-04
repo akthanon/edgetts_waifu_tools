@@ -8,7 +8,8 @@ zona en construcción...
 por el momento se necesitan descargar todas las librerías manualmente
 también se necesitan descargar manualmente y tener en el directorio principal ffmpeg, ffplay y ffprobe para la interfáz gráfica
 
-#DESCRIPCION BASICA
+# DESCRIPCION BASICA
+
 Ecosistema: GPT4ALL
 
 Modelo utilizado: Llama 3 Instruct
