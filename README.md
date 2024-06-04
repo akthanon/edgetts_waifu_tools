@@ -10,9 +10,15 @@ también se necesitan descargar manualmente y tener en el directorio principal f
 
 #DESCRIPCION BASICA
 Ecosistema: GPT4ALL
+
 Modelo utilizado: Llama 3 Instruct
+
 Lenguaje principal: Python
+
 Librerías principales: Pygame(Movimientos del personaje), edge-tts (Voz del personaje)
+
 Librerias secundarias: subprocess, os, tempfile, pathlib, importlib.metadata, io, sys, collections, typing_extensions, typer, random, time, re, wave, numpy, threading, pydub, shutil, argparse
+
 Codigos externos principales: Twitch-Chat-Reader (Interacción con Twitch), GPT4All CLI (Interacción los modelos)
+
 Programas: ffmpeg, ffplay, ffprobe
