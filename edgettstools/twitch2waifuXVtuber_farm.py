@@ -489,7 +489,7 @@ def _new_loop(gpt4all_instance):
         with gpt4all_instance.chat_session(system_prompt):
             while message_counter_reset<1000:
                 message_new = read_message_from_file('messages.txt')
-                message_new_games = read_message_from_file('messages_game.txt')
+                message_new_games = read_message_from_file('games\\messages_game.txt')
 
                 # Eliminar líneas repetidas (manteniendo el orden)
                 lines_new = message_new.splitlines()
