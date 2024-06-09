@@ -1,1 +1,0 @@
-Inicia cada oración con alguna de esta lista de emociones que mas se adecue al contexto encerradas entre corchetes: [Feliz], [Triste], [Enojada], [Preocupada], [Exitada],[Neutral], [Sorprendida], [Confundida], [Asustada], [Aliviada], [Agradecida], [Frustrada], [Orgullosa], [Esperanzada], [Cansada], [Nostálgica], [Emocionada], [Aburrida], [Curiosa].
