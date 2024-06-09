@@ -6,21 +6,21 @@ https://github.com/nomic-ai/gpt4all/blob/main/gpt4all-bindings/cli/app.py
 
 ## Programas
 
-only_twitch_games: interfaz para ejecutar juegos que se juegan solos
+**only_twitch_games:** interfaz para ejecutar juegos que se juegan solos
 
-voice_to_edgetts: voz a edge-tts
+**voice_to_edgetts:** voz a edge-tts
 
-talk_with_txt_waifu: habla con una waifu en ascii
+**talk_with_txt_waifu:** habla con una waifu en ascii
 
-talk_with_Vtuber: habla con una Vtuber en PNG
+**talk_with_Vtuber:** habla con una Vtuber en PNG
 
-twitch_to_txt_waifu: transmite interacciones del chat de twitch con tu waifu ASCII
+**twitch_to_txt_waifu:** transmite interacciones del chat de twitch con tu waifu ASCII
 
-twitch_to_vtuber: transmite interacciones del chat de twitch con tu waifu PNG
+**twitch_to_vtuber:** transmite interacciones del chat de twitch con tu waifu PNG
 
-p_twitch_voice: escucha lo que dice la gente en el chat
+**twitch_voice:** escucha lo que dice la gente en el chat
 
-twitch_to_Vtuber_games: transmite interacciones del chat de twitch con tu waifu PNG mientras ella juega videojuegos
+**twitch_to_Vtuber_games:** transmite interacciones del chat de twitch con tu waifu PNG mientras ella juega videojuegos
 
 # archivos necesarios
 zona en construcción...
