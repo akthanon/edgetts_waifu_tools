@@ -1,4 +1,4 @@
-# edgettstools
+# edgetts_waifu_tools
 EDGETTS WAIFU TOOLS Kit de códigos para interactuar con IAs a través de la voz utilizando EDGE-TTS, la interfáz gráfica está diseñada para facilitar la ejecución de varios scripts de Python que interactúan con Twitch y otras herramientas relacionadas. La interfaz permite seleccionar diferentes configuraciones y ejecutar scripts con los argumentos adecuados.
 
 los códigos para el chat de twitch fueron modificados de:
