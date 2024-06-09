@@ -1,6 +1,8 @@
 import pygame
 import random
 import heapq
+from datetime import datetime
+
 
 # Configuración de la ventana
 WINDOW_WIDTH = 1280
@@ -15,13 +17,12 @@ FOOD_SIZE = 7
 CELL_SIZE = 15
 COLONY_SIZE = 20
 INSIDE_COLONY_SIZE=10
-FOOD_NUMBER = 3
+FOOD_NUMBER = 6
 MOVEMENT_SPEED = 0.2  # Número de celdas que se mueven las hormigas en cada bucle
 
 # Eliminar el contenido del archivo messages.txt al iniciar el programa
-def initialize_file():
-    with open("messages_game.txt", "w") as file:
-        file.write("")
+with open("messages_game.txt", "w") as file:
+    file.write("")
 
 def read_messages_from_file():
     with open("messages_game.txt", "r") as file:
@@ -40,7 +41,7 @@ class MessageLogger:
     def log(self, message):
         if len(self.messages) >= self.max_messages:
             self.messages.pop(0)
-        self.messages.append(message)
+        self.messages.append(datetime.now().strftime("[%H:%M:%S]")+message)
         self.write_to_file()
 
     def write_to_file(self):
@@ -146,7 +147,7 @@ class Ant:
             self.has_food = False
             self.colony.food_collected += 1
             #print(f"Hormiga volvió al hormiguero con comida. Total comida: {self.colony.food_collected}")
-            logger.log(f">Hormigas vuelven con comida. Total comida: {self.colony.food_collected}")
+            logger.log(f"{>Hormigas vuelven con comida. Total comida: {self.colony.food_collected}")
 
     def check_boundaries(self):
         # Comprobar si la hormiga está fuera de los límites

@@ -2,11 +2,11 @@ import pygame
 import random
 from collections import deque
 import time
+from datetime import datetime
 
 # Eliminar el contenido del archivo messages.txt al iniciar el programa
-def initialize_file():
-    with open("messages_game.txt", "w") as file:
-        file.write("")
+with open("messages_game.txt", "w") as file:
+    file.write("")
 
 def read_messages_from_file():
     with open("messages_game.txt", "r") as file:
@@ -25,7 +25,7 @@ class MessageLogger:
     def log(self, message):
         if len(self.messages) >= self.max_messages:
             self.messages.pop(0)
-        self.messages.append(message)
+        self.messages.append(datetime.now().strftime("[%H:%M:%S]")+message)
         self.write_to_file()
 
     def write_to_file(self):
@@ -43,9 +43,10 @@ pygame.init()
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 
 # Configuraciones de la pantalla
-WIDTH, HEIGHT = 800, 400
+WIDTH, HEIGHT = 400, 400
 CELL_SIZE = 20
 FPS = 5
 RESTART_DELAY = 5000  # 5 segundos en milisegundos
@@ -98,6 +99,8 @@ def main():
     font = pygame.font.SysFont(None, 36)
 
     running = True
+    winlose_number = 1  # Inicializar food_number
+    logger.log(f">Juego nuevo número {winlose_number} iniciado")
     while running:
         snake = [(WIDTH // 2, HEIGHT // 2)]
         direction = RIGHT  # Dirección inicial
@@ -106,8 +109,7 @@ def main():
         restart_time = 0
         game_over = False
         food_number = 0  # Inicializar food_number
-        winlose_number = 1  # Inicializar food_number
-        logger.log(f">Juego nuevo número {winlose_number} iniciado")
+        
         while not game_over:
             current_time = pygame.time.get_ticks()
 
@@ -129,7 +131,7 @@ def main():
             if new_head == food:
                 food = generate_food(snake)
                 if food_number % 30 == 0:
-                    logger.log(f">La serpiente ha comido {food_number} ratones")
+                    logger.log(f">La serpiente ha comido {food_number} manzanas")
                 food_number += 1  # Incrementar food_number
             else:
                 snake.pop()
@@ -138,7 +140,7 @@ def main():
             screen.fill(BLACK)
             for segment in snake:
                 pygame.draw.rect(screen, GREEN, (*segment, CELL_SIZE, CELL_SIZE))
-            pygame.draw.rect(screen, WHITE, (*food, CELL_SIZE, CELL_SIZE))
+            pygame.draw.rect(screen, RED, (*food, CELL_SIZE, CELL_SIZE))
             pygame.display.flip()
 
             # Control de velocidad
@@ -147,7 +149,7 @@ def main():
             # Verificar si la serpiente chocó consigo misma o con los bordes de la pantalla
             if (snake[0] in snake[1:]) or (snake[0][0] < 0 or snake[0][0] >= WIDTH or snake[0][1] < 0 or snake[0][1] >= HEIGHT):
                 game_over_text = font.render("PERDISTE", True, WHITE)
-                logger.log(f">La serpiente ha chocado con su cola. Muertes Totales: {winlose_number}")
+                logger.log(f">La serpiente ha chocado con su cola habiendo comido {food_number} manzanas. Muertes Totales: {winlose_number}")
                 winlose_number += 1  # Incrementar food_number
                 game_over_text_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
                 screen.blit(game_over_text, game_over_text_rect)
