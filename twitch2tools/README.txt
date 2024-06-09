@@ -1,1 +1,0 @@
-MAIN CODE FROM: https://github.com/Giooorgiooo/Twitch-Chat-Reader chatreader chatreaderevents
