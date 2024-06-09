@@ -3,6 +3,10 @@ EDGETTS WAIFU TOOLS Es un kit de códigos para interactuar con IAs a través de 
 
 La aplicación permite ejecutar scripts Python con argumentos específicos seleccionados a través de la interfaz. Los argumentos se configuran automáticamente según el script seleccionado.
 
+Ejecuta el edgetts_waifu_tools.bat para la ejecución del programa principal
+
+Ejecuta only_twitch_games si deseas ejecutar los juegos en paralelo al programa principal
+
 # Programas
 
 **only_twitch_games:** interfaz para ejecutar juegos que se juegan solos
