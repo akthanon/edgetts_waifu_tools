@@ -21,6 +21,7 @@ from pydub import AudioSegment
 import shutil
 import argparse
 
+
 global args
 # Configuración de argparse
 parser = argparse.ArgumentParser(description='PNGtuber configuration')
@@ -83,7 +84,7 @@ global emotions, emotions_similar
 
 emotions_similar = {
     "Aburrida": ["Aburrido", "Desinteresada", "Desinteresado", "Cansada", "Cansado", "Indiferente"],
-    "Emocionada": ["Emocionado", "Entusiasmada", "Entusiasmado", "Animada", "Animado"],
+    "Emocionada": ["Emocionado", "Entusiasmada", "Entusiasmado", "Animada", "Animado","Muy emocionada"],
     "Enojada": ["Enojado", "Furiosa", "Furioso", "Molesta", "Molesto", "Irritada", "Irritado"],
     "Llorando": ["Llorando", "Sollozando", "Lagrimando", "Desconsolada", "Desconsolado","Triste"],
     "Nerviosa": ["Nervioso", "Alterada", "Alterado", "Ansiosa", "Ansioso", "Preocupada", "Preocupado", "Tensa", "Tenso"],
@@ -94,7 +95,6 @@ emotions_similar = {
     "Vengativa": ["Exitada", "Vengativo", "Exitado", "Venganza", "Ira"],
 }
 
-
 emotions = ["Aburrida", "Emocionada", "Enojada", "Llorando", "Nerviosa", "Neutral", "Pensativa", "Riendo", "Sorprendida", "Vengativa"]
 audio_path = os.path.join("audios", "sonido2.wav")
 
@@ -103,7 +103,7 @@ def find_similar_emotion(emotion):
     for key, similar_emotions in emotions_similar.items():
         if emotion == key or emotion in similar_emotions:
             return key
-    return None
+    return random.choice(emotions)
 
 
 # Función para redimensionar imágenes manteniendo la relación de aspecto
@@ -275,6 +275,10 @@ def pngtuber():
                 current_emotion = random.choice(emotions_presentes)
                 print("EMOCION SELECCIONADA: ", end="")
                 print(current_emotion)
+            else:
+                current_emotion = random.choice(emotions)
+                print("EMOCION SELECCIONADA: ", end="")
+                print(current_emotion)
         
         last_emotions_list = emotions_list
         
@@ -329,18 +333,6 @@ def pngtuber():
 global emotions_list
 emotions_list=[]
 print("Loading GPT4WAIFU...")
-MESSAGES = [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Hello there."},
-    {"role": "assistant", "content": "Hi, how can I help you?"},
-]
-
-SPECIAL_COMMANDS = {
-    "Comando reiniciar": lambda messages: messages.clear(),
-    "Comando salir": lambda _: sys.exit(),
-    "Comando borrar": lambda _: print("\n" * 100),
-    "Comando ayuda": lambda _: print("Special commands: /reset, /exit, /help and /clear"),
-}
 
 VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
 VERSION_INFO = VersionInfo(1, 0, 0)
@@ -377,7 +369,9 @@ def repl(
     device: str = "gpu"
 ):
     """The CLI read-eval-print loop."""
-    gpt4all_instance = GPT4All(model, device=device)
+    gpt4all_instance = GPT4All(model, device=device, n_ctx=8192)
+    #gpt4all_instance = GPT4All(model, device=device)
+
 
     # Configurar número de hilos si se especifica
     if n_threads is not None:
@@ -412,7 +406,7 @@ def repl(
 
 def limpiar_texto(texto):
     # Expresión regular para mantener letras, números, espacios, acentos, ñ y signos de puntuación
-    patron = r'[^a-zA-Z0-9\sáéíóúüñÁÉÍÓÚÜÑ.!?¿¡]'
+    patron = r'[^a-zA-Z0-9\sáéíóúüñÁÉÍÓÚÜÑ.,!?¿¡]'
     texto_limpio = re.sub(patron, '', texto)
     return texto_limpio
 
@@ -427,15 +421,17 @@ def extraer_emociones(texto):
     emociones = re.findall(r'\[([^\]]+)\]', texto)
     
     # Eliminar las emociones del texto
-    texto_sin_emociones = re.sub(r'\[[^\]]+\]', '', texto)
+    #texto_sin_emociones = re.sub(r'\[[^\]]+\]', '', texto)
     
     # Buscar texto entre asteriscos
     texto_entre_asteriscos = re.findall(r'\*([^*]+)\*', texto)
 
     # Eliminar texto entre asteriscos
-    #texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto_sin_emociones)
+    #texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto)
+    texto_sin_emociones = texto
     
-    return texto_sin_emociones.strip(), emociones
+    return texto_sin_emociones.strip(), texto_entre_asteriscos
+
 
 
 def speak_text_with_edge_tts(text):
@@ -546,107 +542,153 @@ def listen_to_voice():
 
     print("El programa ha sido detenido.")
 
+def count_tokens(text):
+    return int(len(text.split()) * 1.9)
+
+def deslistar(liste):
+    global args
+    lista_salida=[]
+    length = len(liste)
+    num_pares = length // 2
+    cuarto_pares = num_pares // 6  # Encontrar un cuarto del número de pares
+
+    # Extraer el 25% final de la lista en términos de pares
+    resultado = liste[-cuarto_pares*2:]
+    lista_salida=resultado
+
+    formatted_text = ""
+
+    for entry in lista_salida:
+        role = entry['role']
+        content = entry['content']
+        
+        if role == 'user':
+            role = 'yo'
+        elif role == 'assistant':
+            role = args.perso
+        
+        formatted_text += f'{role}: "{content}"\n'
+    formatted_text = f"ESTO ES PARTE DEL HISTORIAL DE UNA CONVERSACIÓN PASADA QUE TU {args.perso} TUVISTE CONMIGO: \n{formatted_text}"
+    return formatted_text
+
 def _new_loop(gpt4all_instance):
     global emotions_list, estado_voz
-    initial_message = read_system_prompt()
+    system_prompt = read_system_prompt()
     emocion=["Aliviada"]
     print("Cargando waifu...") 
     prev_message = ""                   
-    message_counter=0
     max_tokens=300
     condition=True
+    total_count=count_tokens(system_prompt)
+    historial=""
 
-    with gpt4all_instance.chat_session(initial_message):
-        while True:
+    while True:
+        with gpt4all_instance.chat_session(system_prompt):
+            #print(str(gpt4all_instance.current_chat_session[0])+str(gpt4all_instance.current_chat_session[0]))
 
-            estado_voz=1
-            message = listen_to_voice()  # Usar reconocimiento de voz en lugar de input()
+            while True:
+                if total_count>=count_tokens(system_prompt):
+                    print("*Waifu cargada*")
+                    estado_voz=1
 
-            if running_repl == False:
-                message="Comando salir"
+                
+                    message = listen_to_voice()  # Usar reconocimiento de voz en lugar de input()
 
-            # Check if special command and take action
+                    if running_repl == False:
+                        sys.exit()
 
-            if message in SPECIAL_COMMANDS:
-                SPECIAL_COMMANDS[message](MESSAGES)
-                continue
+                    print("*Se pone a pensar*")
 
-            # if regular message, append to messages
-            MESSAGES.append({"role": "user", "content": message})
+                    estado_voz=0
 
-            # if regular message, append to messages
-            MESSAGES.append({"role": "user", "content": message})
-            # execute chat completion and ignore the full response since
-            # we are outputting it incrementally
-            print("*Se pone a pensar*")
-            estado_voz=0
-            response_generator = gpt4all_instance.generate(
-                message,
-                max_tokens=max_tokens,
-                temp=0.9,
-                top_k=40,
-                top_p=0.9,
-                min_p=0.0,
-                repeat_penalty=1.18,
-                repeat_last_n=64,
-                n_batch=9,
-                streaming=True,
-                )
-            response = io.StringIO()
-            chunk = ""
-            emociones =["Neutral"]
-            texto =""
-            emocion=""
-            asteriscos=""
+                if total_count+max_tokens+count_tokens(message)>7800:
+                    print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
+                    total_count=0
+                    break
+                if total_count==0:
+                    mensaje_colox = deslistar(old_chat)
+                    print(mensaje_colox)
+                    old_chat=""
+                    response_generatoro=gpt4all_instance.generate(
+                        mensaje_colox,
+                        max_tokens=0,
+                        temp=0.9,
+                        top_k=40,
+                        top_p=0.9,
+                        min_p=0.0,
+                        repeat_penalty=1,
+                        repeat_last_n=64,
+                        streaming=True,
+                        )
+                    total_count=count_tokens(system_prompt)+count_tokens(mensaje_colox)
+                    response_texto=""
+                    for token in response_generatoro:
+                        response_texto+=token
+                    response_texto+="\n"
 
+                response_generator = gpt4all_instance.generate(
+                    message,
+                    max_tokens=max_tokens,
+                    temp=0.9,
+                    top_k=40,
+                    top_p=0.9,
+                    min_p=0.0,
+                    repeat_penalty=1,
+                    repeat_last_n=max_tokens*2,
+                    n_batch=9,
+                    streaming=True,
+                    )
 
-            response_text=""
-            for token in response_generator:
-                response_text+=token
-            response_text+="\n"
-            textox, emotions_lista  = extraer_emociones(response_text)
+                chunk = ""
+                emociones =["Neutral"]
+                texto =""
+                emocion=""
+                asteriscos=""
 
-            print("EL USUARIO DICE:")
-            print(message)
-            print("")
-            print("LA WAIFU DICE:")
-            print(response_text)
-            print("TODAS LAS EMOCIONES:", end="")
-            print(emotions_lista)
-            
-            tmp_emotion=[]
-            emotion=[]
-            token_max=len(response_text)
-            for token in response_text:
-                response.write(token)
-                chunk += token
-                if token.endswith("\n"):
-                    texto, emociones = extraer_emociones(chunk)
-                    if len(emociones)>0:
-                        for i in emociones:
-                            emotion.append(i)
-                    
-                    texto=limpiar_texto(texto)
+                response_text=""
+                for token in response_generator:
+                    response_text+=token
+                response_text+="\n"
+                textox, emotions_lista  = extraer_emociones(response_text)
 
-                    if cadena_valida(texto):
-                        tmp_emotion+=emotion
-                        emotions_list=tmp_emotion
-                        estado_voz=3
-                        speak_text(texto)
-                        tmp_emotion=[]
-                        emotion=[]
-                    else:
-                        tmp_emotion+=emotion
-                        emotions_list=tmp_emotion
-                        tmp_emotion=[]
-                    chunk = ""
-            message_counter=message_counter+1
-            # record assistant's response to messages
-            response_message = {'role': 'assistant', 'content': response.getvalue()}
-            response.close()
-            gpt4all_instance.current_chat_session.append(response_message)
-            MESSAGES.append(response_message)
-            print()
+                print("EL USUARIO DICE:")
+                print(message)
+                print("")
+                print("LA WAIFU DICE:")
+                print(response_text)
+                print("TODAS LAS EMOCIONES:", end="")
+                print(emotions_lista)
+                
+                tmp_emotion=[]
+                emotion=[]
+                token_max=len(response_text)
+                for token in response_text:
+                    #response.write(token)
+                    chunk += token
+                    if token.endswith("\n") or token.endswith("."):
+                        texto, emociones = extraer_emociones(chunk)
+                        if len(emociones)>0:
+                            for i in emociones:
+                                emotion.append(i)
+                        
+                        texto=limpiar_texto(texto)
+
+                        if cadena_valida(texto):
+                            tmp_emotion+=emotion
+                            emotions_list=tmp_emotion
+                            estado_voz=3
+                            speak_text(texto)
+                            tmp_emotion=[]
+                            emotion=[]
+                        else:
+                            tmp_emotion+=emotion
+                            emotions_list=tmp_emotion
+                            tmp_emotion=[]
+                        chunk = ""
+
+                total_count=total_count+count_tokens(message)+count_tokens(response_text)
+                
+                print(f"TOKENS: {total_count}")
 
 
 @app.command()

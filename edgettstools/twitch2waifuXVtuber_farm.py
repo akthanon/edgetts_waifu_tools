@@ -78,7 +78,7 @@ global emotions, emotions_similar
 
 emotions_similar = {
     "Aburrida": ["Aburrido", "Desinteresada", "Desinteresado", "Cansada", "Cansado", "Indiferente"],
-    "Emocionada": ["Emocionado", "Entusiasmada", "Entusiasmado", "Animada", "Animado"],
+    "Emocionada": ["Emocionado", "Entusiasmada", "Entusiasmado", "Animada", "Animado","Muy emocionada"],
     "Enojada": ["Enojado", "Furiosa", "Furioso", "Molesta", "Molesto", "Irritada", "Irritado"],
     "Llorando": ["Llorando", "Sollozando", "Lagrimando", "Desconsolada", "Desconsolado","Triste"],
     "Nerviosa": ["Nervioso", "Alterada", "Alterado", "Ansiosa", "Ansioso", "Preocupada", "Preocupado", "Tensa", "Tenso"],
@@ -98,7 +98,7 @@ def find_similar_emotion(emotion):
     for key, similar_emotions in emotions_similar.items():
         if emotion == key or emotion in similar_emotions:
             return key
-    return None
+    return random.choice(emotions)
 
 
 # Función para redimensionar imágenes manteniendo la relación de aspecto
@@ -256,6 +256,11 @@ def pngtuber():
                 current_emotion = random.choice(emotions_presentes)
                 print("EMOCION SELECCIONADA: ", end="")
                 print(current_emotion)
+            else:
+                current_emotion = random.choice(emotions)
+                print("EMOCION SELECCIONADA: ", end="")
+                print(current_emotion)
+        
         
         last_emotions_list = emotions_list
         
@@ -355,7 +360,7 @@ def repl(
     device: str = "gpu"
 ):
     """The CLI read-eval-print loop."""
-    gpt4all_instance = GPT4All(model, device=device)
+    gpt4all_instance = GPT4All(model, device=device, n_ctx=8192)
 
     # Configurar número de hilos si se especifica
     if n_threads is not None:
@@ -392,7 +397,7 @@ def repl(
 
 def limpiar_texto(texto):
     # Expresión regular para mantener letras, números, espacios, acentos, ñ y signos de puntuación
-    patron = r'[^a-zA-Z0-9\sáéíóúüñÁÉÍÓÚÜÑ.!?¿¡]'
+    patron = r'[^a-zA-Z0-9\sáéíóúüñÁÉÍÓÚÜÑ.,!?¿¡]'
     texto_limpio = re.sub(patron, '', texto)
     return texto_limpio
 
@@ -407,15 +412,16 @@ def extraer_emociones(texto):
     emociones = re.findall(r'\[([^\]]+)\]', texto)
     
     # Eliminar las emociones del texto
-    texto_sin_emociones = re.sub(r'\[[^\]]+\]', '', texto)
+    #texto_sin_emociones = re.sub(r'\[[^\]]+\]', '', texto)
     
     # Buscar texto entre asteriscos
     texto_entre_asteriscos = re.findall(r'\*([^*]+)\*', texto)
 
     # Eliminar texto entre asteriscos
-    #texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto_sin_emociones)
+    #texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto)
+    texto_sin_emociones = texto
     
-    return texto_sin_emociones.strip(), emociones
+    return texto_sin_emociones.strip(), texto_entre_asteriscos
 
 
 def speak_text_with_edge_tts(text):
@@ -472,77 +478,123 @@ def remove_timestamps(messages):
     #print(messages)
     return messages_notime
 
+def count_tokens(text):
+    return int(len(text.split()) * 1.9)
+
+def deslistar(liste):
+    global args
+    lista_salida=[]
+    length = len(liste)
+    num_pares = length // 2
+    cuarto_pares = num_pares // 6  # Encontrar un cuarto del número de pares
+
+    # Extraer el 25% final de la lista en términos de pares
+    resultado = liste[-cuarto_pares*2:]
+    lista_salida=resultado
+
+    formatted_text = ""
+
+    for entry in lista_salida:
+        role = entry['role']
+        content = entry['content']
+        
+        if role == 'user':
+            role = 'usuarios'
+        elif role == 'assistant':
+            role = args.perso
+        
+        formatted_text += f'{role}: "{content}"\n'
+    formatted_text = f"ESTO ES PARTE DEL HISTORIAL DE UNA CONVERSACIÓN PASADA QUE TU {args.perso} TUVISTE CON LOS USUARIOS: \n{formatted_text}"
+    return formatted_text
 
 def _new_loop(gpt4all_instance):
     global emotions_list
     emocion=["Aliviada"]
     print("Cargando waifu...")                  
-    message_counter_reset=0
     message_new=""
     message_new_games=""
     message_old=""
     message=""
     ram_message=0
     max_tokens=200
+    system_prompt = read_system_prompt()
+    total_count=count_tokens(system_prompt)
     while True:
         system_prompt = read_system_prompt()
         with gpt4all_instance.chat_session(system_prompt):
-            while message_counter_reset<1000:
-                message_new = read_message_from_file('messages.txt')
-                message_new_games = read_message_from_file('games\\messages_game.txt')
+            while True:
+                if total_count>=count_tokens(system_prompt):
+                    message_new = read_message_from_file('messages.txt')
+                    message_new_games = read_message_from_file('games\\messages_game.txt')
 
-                # Eliminar líneas repetidas (manteniendo el orden)
-                lines_new = message_new.splitlines()
-                lines_unique = []
-                for line in lines_new:
-                    if line not in message_old:
-                        lines_unique.append(line)
+                    # Eliminar líneas repetidas (manteniendo el orden)
+                    lines_new = message_new.splitlines()
+                    lines_unique = []
+                    for line in lines_new:
+                        if line not in message_old:
+                            lines_unique.append(line)
 
-                # Eliminar líneas repetidas (manteniendo el orden)
-                lines_new_games = message_new_games.splitlines()
-                lines_unique_games = []
-                for line in lines_new_games:
-                    if line not in message_old:
-                        lines_unique.append(line)
+                    # Eliminar líneas repetidas (manteniendo el orden)
+                    lines_new_games = message_new_games.splitlines()
+                    lines_unique_games = []
+                    for line in lines_new_games:
+                        if line not in message_old:
+                            lines_unique.append(line)
 
-                message_new = "\n".join(lines_unique)      # Reconstruir el mensaje sin repeticiones 
-                message_new_games = "\n".join(lines_unique_games)      # Reconstruir el mensaje sin repeticiones 
-               
-                # Actualizar mensajes antiguos si hay nuevos
-                message_notime = remove_timestamps(message_new)
-                message_notime = "\n".join(message_notime)
+                    message_new = "\n".join(lines_unique)      # Reconstruir el mensaje sin repeticiones 
+                    message_new_games = "\n".join(lines_unique_games)      # Reconstruir el mensaje sin repeticiones 
+                   
+                    # Actualizar mensajes antiguos si hay nuevos
+                    message_notime = remove_timestamps(message_new)
+                    message_notime = "\n".join(message_notime)
 
-                if (lines_unique or lines_unique_games) and (message_notime!="" or message_new_games!=""):
-                    message_old = message_old+"\n"+message_new+"\n"+message_new_games
-                    ram_message +=1
+                    if (lines_unique or lines_unique_games) and (message_notime!="" or message_new_games!=""):
 
-                    if ram_message==2000:
-                        lines_old = message_old.splitlines()
-                        message_old = "\n".join(lines_old[len(lines_old)//2:])
-                        ram_message=0
+                        message_old = message_old+"\n"+message_new+"\n"+message_new_games
+                        ram_message +=1
 
-                    if lines_unique and not lines_unique_games:
-                        message= message_notime
-                    if not lines_unique and lines_unique_games:
-                        message= message_new_games
-                    if lines_unique and lines_unique_games:
-                        message= message_notime + "\n" + message_new_games
-                elif running_repl == True:
-                    time.sleep(1)
-                    continue
-                if running_repl == False:
-                    message="Comando salir"
-                # Check if special command and take action
-                if message in SPECIAL_COMMANDS:
-                    SPECIAL_COMMANDS[message](MESSAGES)
-                    continue
-                # if regular message, append to messages
-                MESSAGES.append({"role": "user", "content": message})
+                        if ram_message==2000:
+                            lines_old = message_old.splitlines()
+                            message_old = "\n".join(lines_old[len(lines_old)//2:])
+                            ram_message=0
 
-                # if regular message, append to messages
-                MESSAGES.append({"role": "user", "content": message})
-                # execute chat completion and ignore the full response since
-                # we are outputting it incrementally
+                        if lines_unique and not lines_unique_games:
+                            message= message_notime
+                        if not lines_unique and lines_unique_games:
+                            message= message_new_games
+                        if lines_unique and lines_unique_games:
+                            message= message_notime + "\n" + message_new_games
+                    elif running_repl == True:
+                        time.sleep(1)
+                        continue
+                    if running_repl == False:
+                        sys.exit()
+
+                if total_count+max_tokens+count_tokens(message)>7800:
+                    print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
+                    total_count=0
+                    break
+                if total_count==0:
+                    mensaje_colox = deslistar(old_chat)
+                    print(mensaje_colox)
+                    old_chat=""
+                    response_generatoro=gpt4all_instance.generate(
+                        mensaje_colox,
+                        max_tokens=0,
+                        temp=0.9,
+                        top_k=40,
+                        top_p=0.9,
+                        min_p=0.0,
+                        repeat_penalty=1,
+                        repeat_last_n=64,
+                        streaming=True,
+                        )
+                    total_count=count_tokens(system_prompt)+count_tokens(mensaje_colox)
+                    response_texto=""
+                    for token in response_generatoro:
+                        response_texto+=token
+                    response_texto+="\n"
+
                 response_generator = gpt4all_instance.generate(
                     message,
                     max_tokens=max_tokens,
@@ -550,12 +602,10 @@ def _new_loop(gpt4all_instance):
                     top_k=40,
                     top_p=0.9,
                     min_p=0.0,
-                    repeat_penalty=1.1,
-                    repeat_last_n=64,
-                    n_batch=9,
+                    repeat_penalty=1,
+                    repeat_last_n=max_tokens*2,
                     streaming=True,
                     )
-                response = io.StringIO()
                 chunk = ""
                 emociones =["Neutral"]
                 texto =""
@@ -582,7 +632,6 @@ def _new_loop(gpt4all_instance):
                 cuenta_token=0
                 token_max=len(response_text)
                 for token in response_text:
-                    response.write(token)
                     chunk += token
                     cuenta_token=cuenta_token+1
                     if cuenta_token<token_max:
@@ -608,16 +657,11 @@ def _new_loop(gpt4all_instance):
                             tmp_emotion=[]
 
                         chunk = ""
-                message_counter_reset=message_counter_reset+1
-                # record assistant's response to messages
-                response_message = {'role': 'assistant', 'content': response.getvalue()}
-                response.close()
-                gpt4all_instance.current_chat_session.append(response_message)
-                MESSAGES.append(response_message)
 
-            message_counter_reset=0
+                total_count=total_count+count_tokens(message)+count_tokens(response_text)
+                old_chat=gpt4all_instance.current_chat_session
+                print(f"TOKENS: {total_count}")
 
-            print("Reiniciando waifu...") 
 
 
 @app.command()
