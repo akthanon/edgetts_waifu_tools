@@ -24,7 +24,7 @@ juegos = [
     "game_arkanoid.py",
     "game_bacterycolony.py",
     "game_ecosistema.py",
-    "game_gameoflife.py",
+    "game_voice.py",
     "game_snake.py",
     "game_trafico.py",
     "game_vehicle.py",
