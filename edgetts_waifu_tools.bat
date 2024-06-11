@@ -36,16 +36,27 @@ if %errorlevel% neq 0 (
     pause
 )
 
-rem Verificar e instalar las bibliotecas necesarias
-set LIBRARIES="psutil subprocess os tempfile speech_recognition pygame pathlib importlib.metadata io sys collections namedtuple typing_extensions typer gpt4all random time re wave numpy threading pydub shutil argparse codecs selenium requests collections.abc time threading bs4 twitchchatreaderevents twitchchatreader datetime"
 
-for %%l in (%LIBRARIES%) do (
-    %PYTHON_EXECUTABLE% -c "import %%l" >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo %%l no está instalado. Instalando %%l...
-        %PYTHON_EXECUTABLE% -m pip install %%l
+rem Lista de bibliotecas a instalar
+set "LIBS=psutil SpeechRecognition pygame importlib_metadata pathlib typer gpt4all numpy pydub selenium requests bs4 PyAudio edge-tts"
+
+rem Obtener lista de bibliotecas instaladas
+pip freeze > installed_libs.txt
+
+rem Bucle para comprobar e instalar las bibliotecas
+for %%i in (%LIBS%) do (
+    findstr /i "\<%%i\>" installed_libs.txt > nul
+    if errorlevel 1 (
+        echo Instalando %%i...
+        pip install %%i
+    ) else (
+        echo %%i ya está instalado.
     )
 )
+
+rem Eliminar el archivo temporal
+del installed_libs.txt
+
 
 rem Verificar si el programa principal está presente
 if not exist edgettstools\interfaz.py (
