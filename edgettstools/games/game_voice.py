@@ -5,6 +5,7 @@ import speech_recognition as sr
 import pygame
 import argparse
 from datetime import datetime
+import re
 global args
 
 # Eliminar el contenido del archivo messages.txt al iniciar el programa
@@ -97,7 +98,7 @@ def listen_to_voice():
             normalized_text = normalize_phonetics(text.lower())
             normalized_keyword = normalize_phonetics(nombre_strem.lower())
             
-            if normalized_keyword in normalized_text:
+            if re.search(rf'\b{normalized_keyword}\b', normalized_text):
                 # Extraer el texto después de la palabra clave
                 keyword_index = normalized_text.index(normalized_keyword)
                 # Añadir la longitud de la palabra clave para saltar la palabra y el espacio después de ella
