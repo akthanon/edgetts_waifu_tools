@@ -56,12 +56,11 @@ mic = sr.Microphone()
 def normalize_phonetics(word):
     phonetic_map = {
         'v': 'b', 'b': 'b', 
-        'c': 'k', 'k': 'k', 'q': 'k', 'qu': 'k', 
+        'c': 'k', 'k': 'k', 'q': 'k', 
         'z': 's', 's': 's', 'x': 's', 'ch': 'sh', 'sh': 'sh',  
-        'll': 'y', 'y': 'y', 'i': 'y', 
-        'h': '', 
+        'y': 'y', 'i': 'y', 
         'g': 'j', 'j': 'j',  # General, jeneral
-        'rr': 'r', 'r': 'r',  # Carro, caro
+        'r': 'r',  # Carro, caro
         'm': 'b','á': 'a','é': 'e','í': 'y','ó': 'o','ú': 'u'  # PULIDAS
     }
     
@@ -94,6 +93,7 @@ def listen_to_voice():
                 continue  # Volver al comienzo del bucle si se excede el tiempo de espera
         try:
             text = recognizer.recognize_google(audio, language='es-ES')  
+            print(f"Has dicho: {text}")
             # Verificar si el texto contiene la palabra clave
             normalized_text = normalize_phonetics(text.lower())
             normalized_keyword = normalize_phonetics(nombre_strem.lower())
@@ -103,10 +103,12 @@ def listen_to_voice():
                 keyword_index = normalized_text.index(normalized_keyword)
                 # Añadir la longitud de la palabra clave para saltar la palabra y el espacio después de ella
                 command = text[keyword_index + len(nombre_strem):].strip()
-                print(f"Has dicho: {text}")
+                #print(f"Comando: {Command}")
                 logger.log(f"{command}")
-                #print(f"Comando recibido: {command}")
+                print(f"Comando recibido: {command}")
                 return command
+            else:
+                print("*Se queda escuchando*")
         except sr.UnknownValueError:
             print("*No lo entiende*")
         except sr.RequestError as e:
@@ -114,58 +116,8 @@ def listen_to_voice():
 
     print("El programa ha sido detenido.")
 
-def speak_text_with_edge_tts(text):
-    global args
-    """Convierte el texto en voz utilizando Edge TTS"""
-    try:
-        # Crear un archivo temporal para almacenar el audio
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_audio_file:
-            output_file_path = temp_audio_file.name
-
-        # Agregar comillas alrededor del texto
-        
-        quoted_text = f'"{text}"'
-        # Ejecutar el comando edge-tts para convertir el texto en audio
-        command = [
-            "edge-tts",
-            "--rate=+15%",
-            "--voice",
-            args.voz,
-            "--text",
-            quoted_text,
-            "--write-media",
-            output_file_path
-        ]
-
-        subprocess.run(command, capture_output=True)
-
-        # Reproducir el archivo de audio resultante
-        if os.path.exists(output_file_path):
-            try:
-                clean_text()
-            except Exception as e:
-                print(f"",end="")
-        else:
-            print("*se traba al hablar*")
-    except Exception as e:
-        print(f"*se hace la oidos sordos*")
-
-# Función para reproducir audio con pygame y esperar a que termine
-def play_audio(audio_file):
-    # Cargar el archivo de audio
-    sound = pygame.mixer.Sound(audio_file)
-    # Reproducir el audio
-    #sound.play()
-    # Esperar a que termine el audio
-
-def clean_text():
-    # Limpia el texto después de reproducir el audio
-    print("Limpiando texto...")
-    # Aquí puedes implementar la lógica para limpiar el texto según tus necesidades
-
 if __name__ == "__main__":
     while True:
         message = listen_to_voice()
         if message.lower() == "salir":
             break
-        speak_text_with_edge_tts(message)
