@@ -427,8 +427,8 @@ def extraer_emociones(texto):
     texto_entre_asteriscos = re.findall(r'\*([^*]+)\*', texto)
 
     # Eliminar texto entre asteriscos
-    #texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto)
-    texto_sin_emociones = texto
+    texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto)
+    #texto_sin_emociones = texto
     
     return texto_sin_emociones.strip(), texto_entre_asteriscos
 
@@ -485,12 +485,11 @@ def speak_text(text):
 def normalize_phonetics(word):
     phonetic_map = {
         'v': 'b', 'b': 'b', 
-        'c': 'k', 'k': 'k', 'q': 'k', 'qu': 'k', 
+        'c': 'k', 'k': 'k', 'q': 'k', 
         'z': 's', 's': 's', 'x': 's', 'ch': 'sh', 'sh': 'sh',  
-        'll': 'y', 'y': 'y', 'i': 'y', 
-        'h': '', 
+        'y': 'y', 'i': 'y', 
         'g': 'j', 'j': 'j',  # General, jeneral
-        'rr': 'r', 'r': 'r',  # Carro, caro
+        'r': 'r',  # Carro, caro
         'm': 'b','á': 'a','é': 'e','í': 'y','ó': 'o','ú': 'u'  # PULIDAS
     }
     
@@ -526,12 +525,13 @@ def listen_to_voice():
             # Verificar si el texto contiene la palabra clave
             normalized_text = normalize_phonetics(text.lower())
             normalized_keyword = normalize_phonetics(args.perso.lower())
-            if normalized_keyword in normalized_text:
+            if re.search(rf'\b{normalized_keyword}\b', normalized_text):
                 # Extraer el texto después de la palabra clave
                 keyword_index = normalized_text.index(normalized_keyword)
                 # Añadir la longitud de la palabra clave para saltar la palabra y el espacio después de ella
                 command = text[keyword_index + len(args.perso):].strip()
-                #print(f"Comando recibido: {command}")
+                print(f"Comando recibido: {command}")
+                print("*Se queda escuchando*")
                 return command
             else:
                 estado_voz = 1
