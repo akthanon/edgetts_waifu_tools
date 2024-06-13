@@ -29,7 +29,7 @@ class MessageLogger:
     def log(self, message):
         if len(self.messages) >= self.max_messages:
             self.messages.pop(0)
-        self.messages.append("NO RESPONDAS ESTE MENSAJE PERO SIGUE LAS INSTRUCCIONES "+datetime.now().strftime("[%H:%M:%S]")+": ["+message+"]")
+        self.messages.append("MENSAJE DE ADMINISTRADOR "+datetime.now().strftime("[%H:%M:%S]")+": ["+message+"]")
         self.write_to_file()
 
     def write_to_file(self):
