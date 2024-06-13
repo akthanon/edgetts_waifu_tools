@@ -555,7 +555,7 @@ def _new_loop(gpt4all_instance):
 
                     # execute chat completion and ignore the full response since
                     # we are outputting it incrementally
-                if total_count+max_tokens+count_tokens(message)>7800:
+                if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break

@@ -418,8 +418,8 @@ def extraer_emociones(texto):
     texto_entre_asteriscos = re.findall(r'\*([^*]+)\*', texto)
 
     # Eliminar texto entre asteriscos
-    #texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto)
-    texto_sin_emociones = texto
+    texto_sin_emociones = re.sub(r'\*([^*]+)\*', '', texto)
+    #texto_sin_emociones = texto
     
     return texto_sin_emociones.strip(), texto_entre_asteriscos
 
@@ -570,7 +570,7 @@ def _new_loop(gpt4all_instance):
                     if running_repl == False:
                         sys.exit()
 
-                if total_count+max_tokens+count_tokens(message)>7800:
+                if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break

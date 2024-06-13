@@ -5,6 +5,7 @@ import speech_recognition as sr
 import pygame
 import time
 import argparse  # Importar el módulo argparse
+import re
 
 from twitchchatreader import TwitchChatReader
 from twitchchatreaderevents import CommentEvent, ConnectEvent

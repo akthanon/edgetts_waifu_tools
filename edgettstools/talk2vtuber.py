@@ -601,7 +601,7 @@ def _new_loop(gpt4all_instance):
 
                     estado_voz=0
 
-                if total_count+max_tokens+count_tokens(message)>7800:
+                if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break
