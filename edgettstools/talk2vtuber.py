@@ -543,7 +543,7 @@ def listen_to_voice():
     print("El programa ha sido detenido.")
 
 def count_tokens(text):
-    return int(len(text.split()) * 1.9)
+    return int(len(text.split()) * 2)
 
 def deslistar(liste):
     global args

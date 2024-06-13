@@ -479,7 +479,7 @@ def remove_timestamps(messages):
     return messages_notime
 
 def count_tokens(text):
-    return int(len(text.split()) * 1.9)
+    return int(len(text.split()) * 2)
 
 def deslistar(liste):
     global args
