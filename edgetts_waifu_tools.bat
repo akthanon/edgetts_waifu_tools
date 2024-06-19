@@ -38,7 +38,7 @@ if %errorlevel% neq 0 (
 
 
 rem Lista de bibliotecas a instalar
-set "LIBS=psutil SpeechRecognition pygame importlib_metadata pathlib typer gpt4all numpy pydub selenium requests bs4 PyAudio edge-tts"
+set "LIBS=setuptools psutil SpeechRecognition pygame importlib_metadata pathlib typer gpt4all numpy pydub selenium requests bs4 PyAudio edge-tts distutils-pytest"
 
 rem Obtener lista de bibliotecas instaladas
 pip freeze > installed_libs.txt
