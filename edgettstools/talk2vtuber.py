@@ -364,7 +364,7 @@ def read_system_prompt():
     return initial_prompt
 
 def repl(
-    model: str = "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    model: str = "badger-lambda-llama-3-8b.Q4_0.gguf",
     n_threads: int = 18,
     device: str = "gpu"
 ):
@@ -687,7 +687,7 @@ def _new_loop(gpt4all_instance):
                         chunk = ""
 
                 total_count=total_count+count_tokens(message)+count_tokens(response_text)
-                
+                old_chat=gpt4all_instance.current_chat_session
                 print(f"TOKENS: {total_count}")
 
 

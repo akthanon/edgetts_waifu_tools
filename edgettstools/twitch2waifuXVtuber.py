@@ -641,6 +641,8 @@ def _new_loop(gpt4all_instance):
                         chunk = ""
 
                 total_count=total_count+count_tokens(message)+count_tokens(response_text)
+                old_chat=gpt4all_instance.current_chat_session
+                
                 
                 print(f"TOKENS: {total_count}")
 

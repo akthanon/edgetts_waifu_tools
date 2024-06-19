@@ -340,6 +340,26 @@ def read_message_from_file(file_path):
     except FileNotFoundError:
         return ""
 
+class MessageLogger:
+    def __init__(self, filename, max_messages=1):
+        self.filename = filename
+        self.max_messages = max_messages
+        self.messages = []
+
+    def log(self, message):
+        if len(self.messages) >= self.max_messages:
+            self.messages.pop(0)
+        self.messages.append(message)
+        self.write_to_file()
+
+    def write_to_file(self):
+        with open(self.filename, 'w') as file:
+            for message in self.messages:
+                file.write(str(message) + '\n')
+
+# Crear una instancia de MessageLogger
+logger = MessageLogger("historial_chat.txt")
+
 def read_system_prompt():
     global args
     """Lee el mensaje inicial desde el archivo especificado por el usuario."""
@@ -354,8 +374,12 @@ def read_system_prompt():
         initial_prompt = ""
     return initial_prompt
 
-def repl(
+def repl(#
     model: str = "Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+    #Average_Normie_v3.69_8B.Q4_0.gguf
+    #badger-lambda-llama-3-8b.Q4_0.gguf
+    #Dorna-Llama3-8B-Instruct.Q4_0.gguf
+    #Meta-Llama-3-8B-Instruct.Q4_0.gguf
     n_threads: int = 18,
     device: str = "gpu"
 ):
@@ -431,6 +455,7 @@ def speak_text_with_edge_tts(text):
             output_file_path = temp_audio_file.name
             global_audio_path= output_file_path
         quoted_text = f'"{text}"'
+        print(quoted_text)
         command = [
             "edge-tts",
             "--rate=+15%",
@@ -565,12 +590,12 @@ def _new_loop(gpt4all_instance):
                         if lines_unique and lines_unique_games:
                             message= message_notime + "\n" + message_new_games
                     elif running_repl == True:
-                        time.sleep(1)
+                        time.sleep(0.5)
                         continue
                     if running_repl == False:
                         sys.exit()
 
-                if total_count+max_tokens+count_tokens(message)>7000:
+                if total_count+max_tokens+count_tokens(message)>6000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break
@@ -602,7 +627,7 @@ def _new_loop(gpt4all_instance):
                     top_k=40,
                     top_p=0.9,
                     min_p=0.0,
-                    repeat_penalty=1,
+                    repeat_penalty=1.14,
                     repeat_last_n=max_tokens*2,
                     streaming=True,
                     )
@@ -657,9 +682,10 @@ def _new_loop(gpt4all_instance):
                             tmp_emotion=[]
 
                         chunk = ""
-
+                #print(gpt4all_instance.current_chat_session)
                 total_count=total_count+count_tokens(message)+count_tokens(response_text)
                 old_chat=gpt4all_instance.current_chat_session
+                #logger.log(old_chat)
                 print(f"TOKENS: {total_count}")
 
 

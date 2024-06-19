@@ -4,19 +4,27 @@ import argparse
 from datetime import datetime
 from twitchchatreader import TwitchChatReader
 from twitchchatreaderevents import CommentEvent, ConnectEvent
+import re
 
 # Eliminar el contenido del archivo messages.txt al iniciar el programa
 def initialize_file():
-    with open("messages.txt", "w") as file:
+    with open("messages.txt", "w", encoding="cp1252") as file:
         file.write("")
 
 def read_messages_from_file():
-    with open("messages.txt", "r") as file:
+    with open("messages.txt", "r", encoding="cp1252") as file:
         return file.readlines()
 
 def save_messages_to_file(messages):
-    with open("messages.txt", "w") as file:
+    with open("messages.txt", "w", encoding="cp1252") as file:
         file.writelines(messages)
+
+
+def limpiar_texto(texto):
+    # Expresión regular para mantener letras, números, espacios, acentos, ñ y signos de puntuación
+    patron = r'[^a-zA-Z0-9\sáéíóúüñÁÉÍÓÚÜÑ:\[\].,!?¿¡]'
+    texto_limpio = re.sub(patron, '', texto)
+    return texto_limpio
 
 def on_comment_handler(event: CommentEvent):
     user = event.user.name
@@ -24,6 +32,7 @@ def on_comment_handler(event: CommentEvent):
     current_time = datetime.now().strftime("[%H:%M:%S]")
     new_message = f"{current_time} {user} dice: {comment}\n"
 
+    new_message=limpiar_texto(new_message)
     if comment:
         messages = read_messages_from_file()
         if len(messages) >= 10:
@@ -31,7 +40,8 @@ def on_comment_handler(event: CommentEvent):
             messages.pop(0)
         # Añadir el nuevo mensaje
         messages.append(new_message)
-        #print(new_message)
+        # Imprimir el mensaje para debug
+        #print(new_message.encode('utf-8').decode('utf-8'))
         # Guardar los mensajes actualizados en el archivo
         save_messages_to_file(messages)
 
@@ -56,4 +66,4 @@ if __name__ == "__main__":
         print("Connection established!")
 
     while True:
-        pass  # Mantener el bucle principal funcionando para escuchar el chat de Twitch
+        time.sleep(1)  # Mantener el bucle principal funcionando para escuchar el chat de Twitch

@@ -30,7 +30,7 @@ class CommentEvent:
     
     def _can_encode(self, string: str) -> bool:
         """
-        Checks if a string can be encoded using the 'charmap' encoding.
+        Checks if a string can be encoded using the 'utf-8' encoding.
 
         Args:
             string (str): The string to check.
@@ -39,7 +39,7 @@ class CommentEvent:
             bool: True if the string can be encoded, False otherwise.
         """
         try:
-            codecs.encode(string, 'charmap')
+            string.encode('utf-8')
             return True
         except UnicodeEncodeError:
             return False

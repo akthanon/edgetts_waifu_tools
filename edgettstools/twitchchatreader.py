@@ -45,7 +45,7 @@ class TwitchChatReader:
 
     def _can_encode(self, string: str) -> bool:
         """
-        Checks if a string can be encoded using the 'charmap' encoding.
+        Checks if a string can be encoded using the 'utf-8' encoding.
 
         Args:
             string (str): The string to check.
@@ -54,7 +54,7 @@ class TwitchChatReader:
             bool: True if the string can be encoded, False otherwise.
         """
         try:
-            codecs.encode(string, 'charmap')
+            string.encode('utf-8')
             return True
         except UnicodeEncodeError:
             return False
@@ -86,7 +86,6 @@ class TwitchChatReader:
         Returns:
             bool: True if the user exists, False otherwise.
         """
-
         exists: bool = False
         url: str = f"https://www.twitch.tv/{user}"
         for i in range(10):
@@ -112,7 +111,7 @@ class TwitchChatReader:
 
             for message in chat_messages:
                 try:
-                    # checking if the message is new and valid (only latin)
+                    # checking if the message is new and valid
                     if self.previous_message is None or get_message_number(message) > get_message_number(self.previous_message)\
                         and not message.text == "" and self._can_encode(message.text):
                         # adding the new message

@@ -25,7 +25,8 @@ def ejecutar_py(ruta_py, botones):
             "p_twitch_to_txt_waifu.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--voz", combo_voz.get()],
             "p_twitch_to_vtuber.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()],
             "p_twitch_voice.py": ["--channel", combo.get(), "--voz", combo_voz.get()],
-            "p_twitch_to_Vtuber_games.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()]
+            "p_twitch_to_Vtuber_games.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()],
+            "p_talk_to_twitch.py": ["--png", combo.get(), "--voz", combo_voz.get()]
         }
         
         # Obtener los argumentos correspondientes al programa seleccionado
@@ -91,7 +92,7 @@ def on_leave(e):
 # Crear la ventana principal
 ventana = tk.Tk()
 ventana.title("Lanzador de Programas")
-ventana.geometry("900x700")
+ventana.geometry("900x800")
 ventana.configure(bg="#333333")
 
 # Título
@@ -111,7 +112,8 @@ archivos_py = [
     "p_twitch_to_txt_waifu.py",
     "p_twitch_to_vtuber.py",
     "p_twitch_voice.py",
-    "p_twitch_to_Vtuber_games.py"
+    "p_twitch_to_Vtuber_games.py",
+    "p_talk_to_twitch.py"
 ]
 
 etiquetas= [
@@ -122,7 +124,8 @@ etiquetas= [
     "canal perso",
     "canal pngtuber perso",
     "canal",
-    "canal pngtuber perso"
+    "canal pngtuber perso",
+    "pngtuber voice"
 ]
 
 max_width = max(len(nombre_amigable)-4 for nombre_amigable in archivos_py)
@@ -150,7 +153,7 @@ etiqueta_combobox = tk.Label(ventana, text="Seleccionar canal:", font=("Helvetic
 etiqueta_combobox.pack(pady=(0, 5))  # Ajuste
 # Crear y colocar el combobox
 combo = ttk.Combobox(ventana, values=nombres)
-combo.set("srtaminyeon")  # Establecer "srtaminyeon" como opción predeterminada
+combo.set("calyseym")  # Establecer "srtaminyeon" como opción predeterminada
 combo.pack(pady=5)
 
 # Configurar las columnas del frame para que se expandan uniformemente
@@ -196,7 +199,7 @@ nombres_voz= [
 etiqueta_combobox_voz = tk.Label(ventana, text="Seleccionar voz:", font=("Helvetica", 12), bg="#333333", fg="#FFFFFF")
 etiqueta_combobox_voz.pack(pady=(0, 5))  # Ajuste del espaciado
 combo_voz = ttk.Combobox(ventana, values=nombres_voz)
-combo_voz.set("es-PA-MargaritaNeural")
+combo_voz.set("es-MX-DaliaNeural")
 combo_voz.pack(pady=5)
 
 # Botón para cerrar el programa en ejecución
