@@ -21,15 +21,15 @@ FOOD_NUMBER = 6
 MOVEMENT_SPEED = 0.2  # Número de celdas que se mueven las hormigas en cada bucle
 
 # Eliminar el contenido del archivo messages.txt al iniciar el programa
-with open("messages_game.txt", "w") as file:
+with open("messages_game.txt", "w", encoding="cp1252") as file:
     file.write("")
 
 def read_messages_from_file():
-    with open("messages_game.txt", "r") as file:
+    with open("messages_game.txt", "r", encoding="cp1252") as file:
         return file.readlines()
 
 def save_messages_to_file(messages):
-    with open("messages_game.txt", "w") as file:
+    with open("messages_game.txt", "w", encoding="cp1252") as file:
         file.writelines(messages)
 
 class MessageLogger:
