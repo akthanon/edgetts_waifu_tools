@@ -26,7 +26,8 @@ def ejecutar_py(ruta_py, botones):
             "p_twitch_to_vtuber.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()],
             "p_twitch_voice.py": ["--channel", combo.get(), "--voz", combo_voz.get()],
             "p_twitch_to_Vtuber_games.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()],
-            "p_talk_to_twitch.py": ["--png", combo.get(), "--voz", combo_voz.get()]
+            "p_talk_to_twitch.py": ["--png", combo.get(), "--voz", combo_voz.get()],
+            "p_SUPREMUS.py":  ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()]
         }
         
         # Obtener los argumentos correspondientes al programa seleccionado
@@ -113,7 +114,8 @@ archivos_py = [
     "p_twitch_to_vtuber.py",
     "p_twitch_voice.py",
     "p_twitch_to_Vtuber_games.py",
-    "p_talk_to_twitch.py"
+    "p_talk_to_twitch.py",
+    "p_SUPREMUS.py"
 ]
 
 etiquetas= [
@@ -125,7 +127,8 @@ etiquetas= [
     "canal pngtuber perso",
     "canal",
     "canal pngtuber perso",
-    "pngtuber voice"
+    "pngtuber voice",
+    "canal pngtuber perso"
 ]
 
 max_width = max(len(nombre_amigable)-4 for nombre_amigable in archivos_py)
