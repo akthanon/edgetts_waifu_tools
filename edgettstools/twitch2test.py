@@ -34,7 +34,7 @@ def save_messages_to_file_h(messages_h):
 
 def limpiar_texto(texto):
     # Expresión regular para mantener letras, números, espacios, acentos, ñ y signos de puntuación
-    patron = r'[^a-zA-Z0-9\sáéíóúüñÁÉÍÓÚÜÑ:\[\].,!?¿¡]'
+    patron = r'[^a-zA-Z0-9\sáéíóúüñÁÉÍÓÚÜÑ-_:\[\].,!?¿¡]'
     texto_limpio = re.sub(patron, '', texto)
     return texto_limpio
 
