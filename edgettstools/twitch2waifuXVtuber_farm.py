@@ -311,19 +311,7 @@ def pngtuber():
 
 global emotions_list
 emotions_list=[]
-print("Loading GPT4WAIFU...")
-MESSAGES = [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Hello there."},
-    {"role": "assistant", "content": "Hi, how can I help you?"},
-]
 
-SPECIAL_COMMANDS = {
-    "Comando reiniciar": lambda messages: messages.clear(),
-    "Comando salir": lambda _: sys.exit(),
-    "Comando borrar": lambda _: print("\n" * 100),
-    "Comando ayuda": lambda _: print("Special commands: /reset, /exit, /help and /clear"),
-}
 
 VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
 VERSION_INFO = VersionInfo(1, 0, 0)
@@ -380,7 +368,9 @@ def repl(#
     #badger-lambda-llama-3-8b.Q4_0.gguf
     #Dorna-Llama3-8B-Instruct.Q4_0.gguf
     #Meta-Llama-3-8B-Instruct.Q4_0.gguf
-    n_threads: int = 18,
+    #qwen2-1_5b-instruct-q8_0.gguf
+    #qwen2-7b-instruct-q2_k.gguf
+    n_threads: int = None,
     device: str = "gpu"
 ):
     """The CLI read-eval-print loop."""
