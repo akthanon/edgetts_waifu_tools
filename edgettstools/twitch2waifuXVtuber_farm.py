@@ -63,8 +63,8 @@ pygame.mixer.init()
 pygame.init()
 
 # Dimensiones de la ventana
-screen_width = 720
-screen_height = 405
+screen_width = 720*2
+screen_height = 405*2
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Título de la ventana
@@ -164,7 +164,7 @@ def get_fragment_amplitude(sound, segundo):
 
 # Función principal del PNGtuber
 def pngtuber():
-    global global_audio_path
+    global global_audio_path, estado_voz
     global current_time_ms, emotions_list, emotions
     current_time_ms = -1
     running = True
@@ -177,7 +177,6 @@ def pngtuber():
 
     mp3_input_file = os.path.join("audios", "sonido3.mp3")
     framon = 0.02
-    timex = 0
     timey = 0
     amplitude_sine = 20
     frequency_sine = 0.2
@@ -190,19 +189,28 @@ def pngtuber():
     duration = 0
     terminado = []
     time_blinking = 0.5
-    stepts_time=1
+    stepts_time = 1
 
     speak_duration = 0.2
     is_speaking = True
     next_speak_time = 0
     amplitude_threshold = 1000
-    # Inicializar pygame
-    pygame.init()
+
+    # Definir colores
+    #color_screen = (255, 255, 255)
+    colores_bolita = {
+        0: (50, 200, 50),  # Verde
+        1: (0, 0, 255),  # Azul
+        2: (255, 255, 0),  # Amarillo
+        3: (255, 0, 0)   # Rojo
+    }
 
     # Variable para almacenar la última lista de emociones procesada
     last_emotions_list = None
     sound_init = False
     sound_initialized = False  # Bandera para controlar la inicialización del sonido
+
+    estado_voz = 3
 
     while running:
         for event in pygame.event.get():
@@ -296,22 +304,24 @@ def pngtuber():
                 if current_frame == 3 or current_frame == 2:
                     current_frame = 3
 
-        vertical_position = screen_height // 2 + int(amplitude_sine * np.sin(2 * np.pi * frequency_sine * timey))+19
+        vertical_position = screen_height // 2 + int(amplitude_sine * np.sin(2 * np.pi * frequency_sine * timey)) + 19 * 2
 
-
-        #print(vertical_position,frequency_sine,timey)
         screen.fill(color_screen)
         image = images[current_emotion][current_frame]
         image_rect = image.get_rect(center=(screen_width // 2, vertical_position))
         screen.blit(image, image_rect)
+
+        # Dibujar bolita de color en la esquina inferior derecha
+        color_bolita = colores_bolita.get(estado_voz, (0, 0, 0))
+        pygame.draw.circle(screen, color_bolita, (screen_width - 20, screen_height - 20), 10)
+
         pygame.display.flip()
 
-        timey += framon*stepts_time
+        timey += framon * stepts_time
         time.sleep(framon)
 
 global emotions_list
 emotions_list=[]
-
 
 VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
 VERSION_INFO = VersionInfo(1, 0, 0)
@@ -523,7 +533,7 @@ def deslistar(liste):
     return formatted_text
 
 def _new_loop(gpt4all_instance):
-    global emotions_list
+    global emotions_list, estado_voz
     emocion=["Aliviada"]
     print("Cargando waifu...")                  
     message_new=""
@@ -539,6 +549,7 @@ def _new_loop(gpt4all_instance):
         with gpt4all_instance.chat_session(system_prompt):
             while True:
                 if total_count>=count_tokens(system_prompt):
+                    estado_voz=1
                     message_new = read_message_from_file('messages.txt')
                     message_new_games = read_message_from_file('games\\messages_game.txt')
 
@@ -609,7 +620,7 @@ def _new_loop(gpt4all_instance):
                     for token in response_generatoro:
                         response_texto+=token
                     response_texto+="\n"
-
+                estado_voz=0
                 response_generator = gpt4all_instance.generate(
                     message,
                     max_tokens=max_tokens,
@@ -663,6 +674,7 @@ def _new_loop(gpt4all_instance):
                         if cadena_valida(texto):
                             tmp_emotion+=emotion
                             emotions_list=tmp_emotion
+                            estado_voz=3
                             speak_text(texto)
                             tmp_emotion=[]
                             emotion=[]

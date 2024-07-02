@@ -200,12 +200,6 @@ def pngtuber():
     is_speaking = True
     next_speak_time = 0
     amplitude_threshold = 1000
-    # Inicializar pygame
-    pygame.init()
-
-    # Crear pantalla
-    screen = pygame.display.set_mode((screen_width, screen_height))
-    pygame.display.set_caption("PngTuber")
 
     # Definir colores
     #color_screen = (255, 255, 255)
@@ -332,7 +326,6 @@ def pngtuber():
 
 global emotions_list
 emotions_list=[]
-print("Loading GPT4WAIFU...")
 
 VersionInfo = namedtuple('VersionInfo', ['major', 'minor', 'micro'])
 VERSION_INFO = VersionInfo(1, 0, 0)
