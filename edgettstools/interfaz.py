@@ -20,14 +20,13 @@ def ejecutar_py(ruta_py, botones):
         argumentos_programas = {
             "p_only_twitch_games.py": [],
             "p_voice_to_edgetts.py": ["--voz", combo_voz.get()],
-            "p_talk_with_txt_waifu.py": ["--perso", combo_personalidad.get(), "--voz", combo_voz.get()],
-            "p_talk_with_Vtuber.py": ["--perso", combo_personalidad.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()],
-            "p_twitch_to_txt_waifu.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--voz", combo_voz.get()],
-            "p_twitch_to_vtuber.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()],
+            "p_talk_with_Vtuber.py": ["--perso", combo_personalidad.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get(), "--model", combo_modelos.get(),"--option", "voz"],
+            "p_twitch_to_vtuber.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get(), "--model", combo_modelos.get(),"--option", "otwi"],
             "p_twitch_voice.py": ["--channel", combo.get(), "--voz", combo_voz.get()],
-            "p_twitch_to_Vtuber_games.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()],
+            "p_twitch_to_Vtuber_games.py": ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get(), "--model",combo_modelos.get(),"--option", "vtwi"],
             "p_talk_to_twitch.py": ["--png", combo.get(), "--voz", combo_voz.get()],
-            "p_SUPREMUS.py":  ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get()]
+            "p_SUPREMUS.py":  ["--perso", combo_personalidad.get(), "--channel", combo.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get(),"--model",combo_modelos.get(),"--option", "vtwi"],
+            "p_text_with_Vtuber.py": ["--perso", combo_personalidad.get(), "--png", combo_pngtuber.get(), "--voz", combo_voz.get(), "--model",combo_modelos.get(), "--option", "text"]
         }
         
         # Obtener los argumentos correspondientes al programa seleccionado
@@ -76,12 +75,16 @@ def cerrar_py():
             for p in still_alive:
                 p.kill()  # Forzar terminación si alguno sigue vivo
 
-            messagebox.showinfo("Información", "El programa en ejecución y sus subprocesos han sido cerrados.")
+            #messagebox.showinfo("Información", "El programa en ejecución y sus subprocesos han sido cerrados.")
             print("El programa en ejecución y sus subprocesos han sido cerrados.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo cerrar el programa.\n{e}")
-    else:
-        messagebox.showinfo("Información", "No hay ningún programa en ejecución.")
+    #else:
+        #messagebox.showinfo("Información", "No hay ningún programa en ejecución.")
+
+def cerrar_todo():
+    ventana.quit()
+    cerrar_py()
 
 # Funciones para cambiar el color de los botones al pasar el ratón
 def on_enter(e):
@@ -108,14 +111,13 @@ frame_botones.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 archivos_py = [
     "p_only_twitch_games.py",
     "p_voice_to_edgetts.py",
-    "p_talk_with_txt_waifu.py",
     "p_talk_with_Vtuber.py",
-    "p_twitch_to_txt_waifu.py",
     "p_twitch_to_vtuber.py",
     "p_twitch_voice.py",
     "p_twitch_to_Vtuber_games.py",
     "p_talk_to_twitch.py",
-    "p_SUPREMUS.py"
+    "p_SUPREMUS.py",
+    "p_text_with_Vtuber.py"
 ]
 
 etiquetas= [
@@ -128,7 +130,8 @@ etiquetas= [
     "canal",
     "canal pngtuber perso",
     "pngtuber voice",
-    "canal pngtuber perso"
+    "canal pngtuber perso",
+    "pngtuber perso",
 ]
 
 max_width = max(len(nombre_amigable)-4 for nombre_amigable in archivos_py)
@@ -149,7 +152,7 @@ for i, archivo in enumerate(archivos_py):
     botones.append(boton)
 
 # Lista de nombres para el combobox
-nombres = ["crisbelgs", "calyseym", "ibai", "srtaminyeon"]
+nombres = ["crisbelgs", "calyseym", "srtaminyeon"]
 
 # Crear una etiqueta para explicar el propósito del combobox
 etiqueta_combobox = tk.Label(ventana, text="Seleccionar canal:", font=("Helvetica", 12), bg="#333333", fg="#FFFFFF")
@@ -171,7 +174,7 @@ nombres_personalidad = os.listdir("Personalidad")
 etiqueta_combobox_pngtuber = tk.Label(ventana, text="Seleccionar PNGtuber:", font=("Helvetica", 12), bg="#333333", fg="#FFFFFF")
 etiqueta_combobox_pngtuber.pack(pady=(0, 5))  # Ajuste del espaciado
 combo_pngtuber = ttk.Combobox(ventana, values=nombres_pngtuber)
-combo_pngtuber.set("Calyseym")
+combo_pngtuber.set("CalyHD")
 combo_pngtuber.pack(pady=5)
 
 # Limpiar los nombres de los archivos quitando "system_prompt_" y ".txt"
@@ -183,6 +186,14 @@ etiqueta_combobox_personalidad.pack(pady=(0, 5))  # Ajuste del espaciado
 combo_personalidad = ttk.Combobox(ventana, values=nombres_personalidad_limpio)
 combo_personalidad.set("cali")
 combo_personalidad.pack(pady=5)
+
+nombres_modelos = os.listdir("modelos")
+# Crear una etiqueta y combobox para seleccionar de la lista "Personalidad"
+etiqueta_combobox_modelos = tk.Label(ventana, text="Seleccionar modelo:", font=("Helvetica", 12), bg="#333333", fg="#FFFFFF")
+etiqueta_combobox_modelos.pack(pady=(0, 5))  # Ajuste del espaciado
+combo_modelos = ttk.Combobox(ventana, values=nombres_modelos)
+combo_modelos.set("Meta-Llama-3-8B-Instruct.Q4_0.gguf")
+combo_modelos.pack(pady=5)
 
 nombres_voz= [
     "es-PA-MargaritaNeural",
@@ -198,6 +209,7 @@ nombres_voz= [
     "es-VE-SebastianNeural"
 ]
 
+
 # Crear una etiqueta y combobox para seleccionar de la lista "voz"
 etiqueta_combobox_voz = tk.Label(ventana, text="Seleccionar voz:", font=("Helvetica", 12), bg="#333333", fg="#FFFFFF")
 etiqueta_combobox_voz.pack(pady=(0, 5))  # Ajuste del espaciado
@@ -211,7 +223,7 @@ cerrar_py_boton.pack(padx=20, pady=10)
 cerrar_py_boton.config(height=1)  # Ajustar la altura del botón
 
 # Botón para cerrar la aplicación
-cerrar_boton = tk.Button(ventana, text="Cerrar Aplicación", font=("Helvetica", 14), bg="#FF5555", fg="white", command=ventana.quit)
+cerrar_boton = tk.Button(ventana, text="Cerrar Aplicación", font=("Helvetica", 14), bg="#FF5555", fg="white", command=cerrar_todo)
 cerrar_boton.pack(padx=20, pady=10)
 cerrar_boton.config(height=1)  # Ajustar la altura del botón
 
