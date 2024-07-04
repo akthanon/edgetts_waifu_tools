@@ -123,9 +123,7 @@ archivos_py = [
 etiquetas= [
     "NA",
     "only voice",
-    "perso",
     "pngtuber perso",
-    "canal perso",
     "canal pngtuber perso",
     "canal",
     "canal pngtuber perso",
