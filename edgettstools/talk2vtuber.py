@@ -1,28 +1,17 @@
-import subprocess
 import os
-import tempfile
-from pathlib import Path
-import speech_recognition as sr
-import importlib.metadata
-import io
+import speech_recognition as sr # type: ignore
 import sys
-from collections import namedtuple
-from typing_extensions import Annotated
-import typer
-from gpt4all import GPT4All
-import random
+from gpt4all import GPT4All # type: ignore
 import time
-import pygame
+import pygame # type: ignore
 import re
-import wave
-import numpy as np
 import threading
-from pydub import AudioSegment
-import shutil
 import argparse
+global current_time_ms
 from funciones_tts import *
-
+from funciones import *
 global args
+
 # Configuración de argparse
 parser = argparse.ArgumentParser(description='PNGtuber configuration')
 parser.add_argument('--png', type=str, default='Caly the Cattrap', help='Name of the PNGtuber')
@@ -30,6 +19,10 @@ parser.add_argument('--voz', type=str, default='es-PA-MargaritaNeural', help='Vo
 parser.add_argument('--perso', type=str, default='waifu', help='Nombre del archivo de sistema de inicio')
 parser.add_argument('--model', type=str, default='Meta-Llama-3-8B-Instruct.Q4_0.gguf', help='Nombre del modelo')
 parser.add_argument('--option', type=str, default='', help='Opcion')
+parser.add_argument('--lang', type=str, default='Español', help='Opcion')
+parser.add_argument('--request', type=str, default='False', help='Opcion')
+parser.add_argument('--temp', type=str, default='0.9', help='Opcion')
+parser.add_argument('--reppen', type=str, default='1', help='Opcion')
 args = parser.parse_args()
 
 # Ruta de las imágenes y el audio
@@ -61,7 +54,7 @@ mic = sr.Microphone()
 #Variables
 running_repl = True
 global global_audio_path
-global current_time_ms
+
 global_audio_path = ""
 
 # Inicializar pygame para la reproducción de audio
@@ -109,13 +102,12 @@ def pngtuber(screen, screen_width, screen_height):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
-        is_blinking, next_blink_time, blink_start_time, current_frame = handle_blinking(is_blinking, next_blink_time, blink_duration, blink_start_time, current_frame)
         
         from funciones_tts import current_time_ms
         
+        is_blinking, next_blink_time, blink_start_time, current_frame = handle_blinking(is_blinking, next_blink_time, blink_duration, blink_start_time, current_frame)
         try:
-            sound_initialized, amplitude, current_frame, duration, estado, audio_path, sound_init=handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame)
+            sound_initialized, amplitude, current_frame, duration, estado, audio_path, sound_init=handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame, is_blinking)
         except:
             pass
 
@@ -186,25 +178,17 @@ def repl(
 
     # Configurar número de hilos si se especifica
     if n_threads is not None:
-        num_threads = gpt4all_instance.model.thread_count()
-
         # Configurar número de hilos
         gpt4all_instance.model.set_thread_count(n_threads)
-
-        num_threads = gpt4all_instance.model.thread_count()
     ejecutar_modelo(gpt4all_instance)
 
 def ejecutar_modelo(gpt4all_instance):
     global emotions_list, estado_voz, args, global_audio_path
-    system_prompt = read_system_prompt(args)
-    emocion=["Aliviada"]
-    print("Cargando waifu...") 
-    prev_message = ""                   
+    system_prompt = read_system_prompt(args)+"\nLanguage: "+args.lang
+    print("Cargando waifu...")                
     max_tokens=300
-    condition=True
     total_count=count_tokens(system_prompt)
-    historial=""
-
+    gpt4all_instancea=load_modela()
     while True:
         with gpt4all_instance.chat_session(system_prompt):
             #print(str(gpt4all_instance.current_chat_session[0])+str(gpt4all_instance.current_chat_session[0]))
@@ -217,14 +201,18 @@ def ejecutar_modelo(gpt4all_instance):
                     if args.option == "voz":
                         message = listen_to_voice()  # Usar reconocimiento de voz en lugar de input()
                     elif args.option == "text":
-                        message = input(" ⇢  ")  # Usar input() en vez del reconocimiento de voz
+                        message = input(" ⇢  ")  # Usar input() en vez del reconocimiento de voz   
+
+                    estado_voz=0
+                    if peticiones(message) and args.request=="True":
+                        response_request = ejecutar_modeloa(gpt4all_instancea, message)
+                        if response_request != "NA":
+                            message+=".\nInformation about request: " + response_request+"\nLanguage: "+args.lang
 
                     if running_repl == False:
                         sys.exit()
 
                     print("*Se pone a pensar*")
-
-                    estado_voz=0
 
                 if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
@@ -237,11 +225,11 @@ def ejecutar_modelo(gpt4all_instance):
                     response_generatoro=gpt4all_instance.generate(
                         mensaje_colox,
                         max_tokens=0,
-                        temp=0.9,
+                        temp=float(args.temp),
                         top_k=40,
                         top_p=0.9,
                         min_p=0.0,
-                        repeat_penalty=1,
+                        repeat_penalty=float(args.reppen),
                         repeat_last_n=64,
                         streaming=True,
                         )
@@ -254,11 +242,11 @@ def ejecutar_modelo(gpt4all_instance):
                 response_generator = gpt4all_instance.generate(
                     message,
                     max_tokens=max_tokens,
-                    temp=0.9,
+                    temp=float(args.temp),
                     top_k=40,
                     top_p=0.9,
                     min_p=0.0,
-                    repeat_penalty=1,
+                    repeat_penalty=float(args.reppen),
                     repeat_last_n=max_tokens*2,
                     n_batch=32,
                     streaming=True,
@@ -283,7 +271,7 @@ def ejecutar_modelo(gpt4all_instance):
                 print(response_text)
                 print("TODAS LAS EMOCIONES:", end="")
                 print(emotions_lista)
-                
+
                 tmp_emotion=[]
                 emotion=[]
                 token_max=len(response_text)

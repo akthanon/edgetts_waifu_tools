@@ -179,7 +179,7 @@ def handle_blinking(is_blinking, next_blink_time, blink_duration, blink_start_ti
     return is_blinking, next_blink_time, blink_start_time, current_frame
 
 
-def handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame):
+def handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame, is_blinking):
     if os.path.exists(audio_mp3):
         if sound_init and not sound_initialized:
             sound = AudioSegment.from_mp3(audio_mp3)
@@ -195,7 +195,10 @@ def handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, glob
             amplitude, estado = get_fragment_amplitude(audio_path, current_time_ms / 1000)
     if current_time_ms + 20 >= duration:
         amplitude = 0
-        current_frame = 0
+        if is_blinking:
+            current_frame = 1
+        else:
+            current_frame = 0
         duration = 0
 
     return sound_initialized, amplitude, current_frame, duration, estado, audio_path, sound_init

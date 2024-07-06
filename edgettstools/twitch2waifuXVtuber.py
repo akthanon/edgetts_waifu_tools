@@ -1,24 +1,11 @@
-import subprocess
 import os
-import tempfile
-from pathlib import Path
-import importlib.metadata
-import io
 import sys
-from collections import namedtuple
-from typing_extensions import Annotated
-import typer
-from gpt4all import GPT4All
-import random
+from gpt4all import GPT4All # type: ignore
 import time
-import pygame
-import re
-import wave
-import numpy as np
+import pygame # type: ignore
 import threading
-from pydub import AudioSegment
-import shutil
 import argparse
+global current_time_ms
 from funciones_tts import *
 global args
 
@@ -29,6 +16,10 @@ parser.add_argument('--voz', type=str, default='es-PA-MargaritaNeural', help='Vo
 parser.add_argument('--png', type=str, default='Calyseym', help='Nombre Vtuber')
 parser.add_argument('--model', type=str, default='Meta-Llama-3-8B-Instruct.Q4_0.gguf', help='Nombre del modelo')
 parser.add_argument('--option', type=str, default='', help='Opcion')
+parser.add_argument('--lang', type=str, default='Español', help='Opcion')
+parser.add_argument('--request', type=str, default='False', help='Opcion')
+parser.add_argument('--temp', type=str, default='0.9', help='Opcion')
+parser.add_argument('--reppen', type=str, default='1', help='Opcion')
 args = parser.parse_args()
 
 # Ruta de las imágenes y el audio
@@ -56,7 +47,6 @@ if not os.path.exists(pngtuber_path):
 #Variables
 running_repl = True
 global global_audio_path
-global current_time_ms
 global_audio_path = ""
 
 # Inicializar pygame para la reproducción de audio
@@ -110,7 +100,7 @@ def pngtuber(screen, screen_width, screen_height):
         from funciones_tts import current_time_ms
         
         try:
-            sound_initialized, amplitude, current_frame, duration, estado, audio_path, sound_init=handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame)
+            sound_initialized, amplitude, current_frame, duration, estado, audio_path, sound_init=handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame, is_blinking)
         except:
             pass
 
@@ -184,10 +174,10 @@ def ejecutar_modelo(gpt4all_instance):
     message=""
     ram_message=0
     max_tokens=200
-    system_prompt = read_system_prompt(args)
+    system_prompt = read_system_prompt(args)+"\nLanguage: "+args.lang
     total_count=count_tokens(system_prompt)
     while True:
-        system_prompt = read_system_prompt(args)
+        system_prompt = read_system_prompt(args)+"\nLanguage: "+args.lang
         with gpt4all_instance.chat_session(system_prompt):
             while True:
                 if total_count>=count_tokens(system_prompt):
@@ -232,11 +222,11 @@ def ejecutar_modelo(gpt4all_instance):
                     response_generatoro=gpt4all_instance.generate(
                         mensaje_colox,
                         max_tokens=0,
-                        temp=0.9,
+                        temp=float(args.temp),
                         top_k=40,
                         top_p=0.9,
                         min_p=0.0,
-                        repeat_penalty=1,
+                        repeat_penalty=float(args.reppen),
                         repeat_last_n=64,
                         streaming=True,
                         )
@@ -249,11 +239,11 @@ def ejecutar_modelo(gpt4all_instance):
                 response_generator = gpt4all_instance.generate(
                     message,
                     max_tokens=max_tokens,
-                    temp=0.9,
+                    temp=float(args.temp),
                     top_k=40,
                     top_p=0.9,
                     min_p=0.0,
-                    repeat_penalty=1,
+                    repeat_penalty=float(args.reppen),
                     repeat_last_n=max_tokens*2,
                     n_batch=9,
                     #n_batch=128,
@@ -322,10 +312,10 @@ def ejecutar_modelo_voice(gpt4all_instance):
     message=""
     ram_message=0
     max_tokens=200
-    system_prompt = read_system_prompt(args)
+    system_prompt = read_system_prompt(args)+"\nLanguage: "+args.lang
     total_count=count_tokens(system_prompt)
     while True:
-        system_prompt = read_system_prompt(ars)
+        system_prompt = read_system_prompt(args)
         with gpt4all_instance.chat_session(system_prompt):
             while True:
                 if total_count>=count_tokens(system_prompt):
@@ -387,11 +377,11 @@ def ejecutar_modelo_voice(gpt4all_instance):
                     response_generatoro=gpt4all_instance.generate(
                         mensaje_colox,
                         max_tokens=0,
-                        temp=0.9,
+                        temp=float(args.temp),
                         top_k=40,
                         top_p=0.9,
                         min_p=0.0,
-                        repeat_penalty=1,
+                        repeat_penalty=float(args.reppen),
                         repeat_last_n=64,
                         streaming=True,
                         )
@@ -404,11 +394,11 @@ def ejecutar_modelo_voice(gpt4all_instance):
                 response_generator = gpt4all_instance.generate(
                     message,
                     max_tokens=max_tokens,
-                    temp=0.9,
+                    temp=float(args.temp),
                     top_k=40,
                     top_p=0.9,
                     min_p=0.0,
-                    repeat_penalty=1.14,
+                    repeat_penalty=float(args.reppen),
                     repeat_last_n=max_tokens*2,
                     streaming=True,
                     )
