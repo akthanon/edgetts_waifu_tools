@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import subprocess
 import os
-import psutil
+import psutil # type: ignore
 
 # Variable global para almacenar el proceso en ejecución
 proceso_actual = None
@@ -113,10 +113,33 @@ def on_enter(e):
 def on_leave(e):
     e.widget['background'] = '#00A2E8'
 
+
+def cargar_personalidad(event):
+    selected_personality = combo_personalidad.get()
+    file_path = f"personalidad/system_prompt_{selected_personality}.txt"
+    try:
+        with open(file_path, "r") as file:
+            contenido = file.read()
+        text_editor.delete("1.0", tk.END)
+        text_editor.insert(tk.END, contenido)
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo cargar el archivo de personalidad.\n{e}")
+
+def guardar_personalidad():
+    selected_personality = combo_personalidad.get()
+    file_path = f"personalidad/system_prompt_{selected_personality}.txt"
+    try:
+        with open(file_path, "w") as file:
+            contenido = text_editor.get("1.0", tk.END)
+            file.write(contenido)
+        messagebox.showinfo("Información", "El archivo de personalidad ha sido guardado.")
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo guardar el archivo de personalidad.\n{e}")
+
 # Crear la ventana principal
 ventana = tk.Tk()
 ventana.title("Lanzador de Programas")
-ventana.geometry("900x800")
+ventana.geometry("1500x800")
 ventana.configure(bg="#333333")
 
 # Título
@@ -127,12 +150,16 @@ titulo.pack(pady=20)
 frame_botones = tk.Frame(ventana, bg="#444444")
 frame_botones.pack(fill=tk.BOTH, expand=True, padx=20, pady=10, side=tk.LEFT)
 
+# Frame para contener el cuadro de edición de texto y sus botones
+frame_editor = tk.Frame(ventana, bg="#444444")
+frame_editor.pack(fill=tk.BOTH, expand=True, padx=20, pady=10, side=tk.RIGHT)
+
 # Lista de archivos .py con rutas
 archivos_py = [
     "p_talk_with_Vtuber.py",
     "p_text_with_Vtuber.py",
     "p_twitch_to_vtuber.py",
-    "p_twitch_to_Vtuber_farm.py",
+    "p_twitch_to_Vtuber_games.py",
     "p_SUPREMUS.py",
     "p_talk_to_twitch.py",
     "p_only_twitch_games.py",
@@ -190,7 +217,7 @@ frame_botones.grid_columnconfigure(1, weight=1)
 
 # Obtener los nombres de los directorios dentro de las carpetas "PNGtubers" y "Personalidad"
 nombres_pngtuber = os.listdir("PNGtubers")
-nombres_personalidad = os.listdir("Personalidad")
+nombres_personalidad = os.listdir("personalidad")
 
 # Crear una etiqueta y combobox para seleccionar de la lista "PNGtuber"
 etiqueta_combobox_pngtuber = tk.Label(ventana, text="Choise PNGtuber:", font=("Helvetica", 12), bg="#333333", fg="#FFFFFF")
@@ -209,10 +236,10 @@ combo_personalidad.set("cali")
 combo_personalidad.pack(pady=5)
 
 nombres_modelos = os.listdir("modelos")
-# Crear una etiqueta y combobox para seleccionar de la lista "Personalidad"
+# Crear una etiqueta y combobox para seleccionar de la lista "Modelos"
 etiqueta_combobox_modelos = tk.Label(ventana, text="Choise model", font=("Helvetica", 12), bg="#333333", fg="#FFFFFF")
 etiqueta_combobox_modelos.pack(pady=(0, 5))  # Ajuste del espaciado
-combo_modelos = ttk.Combobox(ventana, values=nombres_modelos)
+combo_modelos = ttk.Combobox(ventana, values=nombres_modelos,width=40)
 combo_modelos.set("Meta-Llama-3-8B-Instruct.Q4_0.gguf")
 combo_modelos.pack(pady=5)
 
@@ -279,5 +306,16 @@ cerrar_boton = tk.Button(ventana, text="Cerrar Aplicación", font=("Helvetica", 
 cerrar_boton.pack(padx=20, pady=10)
 cerrar_boton.config(height=1)  # Ajustar la altura del botón
 
+# Cuadro de edición de texto
+text_editor = tk.Text(frame_editor, font=("Helvetica", 12), wrap=tk.WORD, bg="#555555", fg="#FFFFFF")
+text_editor.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+
+boton_guardar = tk.Button(frame_editor, text="Guardar Personalidad", font=("Helvetica", 10), width=20, height=2, bg="#00A2E8", fg="#FFFFFF", command=guardar_personalidad)
+boton_guardar.pack(pady=5)
+
+# Asignar evento de cambio de selección en el combobox de personalidad
+combo_personalidad.bind("<<ComboboxSelected>>", cargar_personalidad)
 # Iniciar el bucle principal de la interfaz
+cargar_personalidad("")
 ventana.mainloop()

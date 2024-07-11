@@ -401,3 +401,57 @@ def read_message_from_file(file_path):
             return file.read().strip()
     except FileNotFoundError:
         return ""
+    
+
+class MessageLogger:
+    def __init__(self, filename, max_messages=1):
+        self.filename = filename
+        self.max_messages = max_messages
+        self.messages = []
+
+    def log(self, message):
+        if len(self.messages) >= self.max_messages:
+            self.messages.pop(0)
+        self.messages.append(message)
+        self.write_to_file()
+
+    def write_to_file(self):
+        with open(self.filename, 'w') as file:
+            for message in self.messages:
+                file.write(str(message) + '\n')
+
+class MessageMemory:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def log(self, message):
+        self.message=message
+        self.write_to_file()
+
+    def write_to_file(self):
+        with open(self.filename, 'a') as file:
+            file.write(str(self.message) + '\n')
+
+# Crear una instancia de MessageLogger
+logger = MessageLogger("historial_chat.txt")
+recuerdo = MessageMemory("historial_recuerdo.txt")
+
+def memorizar(texto, gpt4all_instance, system_prompt, args):
+    message="GENERA UN RESUMEN DE LO MAS IMPORTANTE DE ESTA CONVERSACIÓN EN EL QUE "+deslistar(texto[1:], args)
+    response_generator=gpt4all_instance.generate(
+        message,
+        max_tokens=500,
+        temp=float(args.temp),
+        top_k=40,
+        top_p=0.9,
+        min_p=0.0,
+        repeat_penalty=float(args.reppen),
+        repeat_last_n=64,
+        streaming=True,
+        )
+    total_count=count_tokens(system_prompt)+count_tokens(message)
+    response_texto=""
+    for token in response_generator:
+        response_texto+=token
+    recuerdo.log(response_texto)
+    return total_count

@@ -167,7 +167,7 @@ def listen_to_voice():
 
     print("El programa ha sido detenido.")
 
-    
+
 def repl(
     model: str = args.model,
     n_threads: int = None,
@@ -188,7 +188,10 @@ def ejecutar_modelo(gpt4all_instance):
     print("Cargando waifu...")                
     max_tokens=300
     total_count=count_tokens(system_prompt)
-    gpt4all_instancea=load_modela()
+    old_chat=""
+    message_recuerdo = read_message_from_file('historial_recuerdo.txt')
+    if args.request=="True":
+        gpt4all_instancea=load_modela()
     while True:
         with gpt4all_instance.chat_session(system_prompt):
             #print(str(gpt4all_instance.current_chat_session[0])+str(gpt4all_instance.current_chat_session[0]))
@@ -198,12 +201,19 @@ def ejecutar_modelo(gpt4all_instance):
                     print("*Waifu cargada*")
                     estado_voz=1
 
-                    if args.option == "voz":
+                    if len(message_recuerdo)>0:
+                        print("*Recordando...*")
+                        message="HISTORIAL DE CONVERSACIÓN PASADA: "+message_recuerdo
+                        message_recuerdo=""
+                    elif args.option == "voz":
                         message = listen_to_voice()  # Usar reconocimiento de voz en lugar de input()
                     elif args.option == "text":
+                        time.sleep(0.1)
                         message = input(" ⇢  ")  # Usar input() en vez del reconocimiento de voz   
 
                     estado_voz=0
+
+#********************PETICIONES Y COMANDOS********************
                     if peticiones(message) and args.request=="True":
                         response_request = ejecutar_modeloa(gpt4all_instancea, message)
                         if response_request != "NA":
@@ -214,13 +224,32 @@ def ejecutar_modelo(gpt4all_instance):
 
                     print("*Se pone a pensar*")
 
+                if "comando reiniciar".lower() in message.lower():
+                    total_count=7000
+                    print("Reiniciando manualmente, por favor espere...")
+                    message=""
+
+                if "comando memorizar".lower() in message.lower() and len(old_chat)>0:
+                    total_count=memorizar(old_chat, gpt4all_instance, system_prompt, args)
+
+                if "comando recordar".lower() in message.lower():
+                    message_recuerdo = read_message_from_file('historial_recuerdo.txt')
+                    break
+                if "comando borrar".lower() in message.lower() and len(old_chat)>0:
+                    with open("historial_recuerdo.txt", 'w') as file:
+                        file.write("")
+                    break
+
+#********************FIN PETICIONES Y COMANDOS********************
+
                 if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break
                 if total_count==0:
                     mensaje_colox = deslistar(old_chat, args)
-                    print(mensaje_colox)
+                    print(old_chat)
+                    print("MENSAJE DESLISTADO: "+mensaje_colox)
                     old_chat=""
                     response_generatoro=gpt4all_instance.generate(
                         mensaje_colox,
@@ -238,6 +267,8 @@ def ejecutar_modelo(gpt4all_instance):
                     for token in response_generatoro:
                         response_texto+=token
                     response_texto+="\n"
+                if message=="":
+                    break
 
                 response_generator = gpt4all_instance.generate(
                     message,
@@ -301,6 +332,7 @@ def ejecutar_modelo(gpt4all_instance):
 
                 total_count=total_count+count_tokens(message)+count_tokens(response_text)
                 old_chat=gpt4all_instance.current_chat_session
+                logger.log(deslistar(old_chat, args))
                 print(f"TOKENS: {total_count}")
 
 

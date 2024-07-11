@@ -211,12 +211,16 @@ def ejecutar_modelo(gpt4all_instance):
 
                     # execute chat completion and ignore the full response since
                     # we are outputting it incrementally
+                if "comando reiniciar".lower() in message.lower():
+                    total_count=7000
+                    print("Reiniciando manualmente, por favor espere...")
+                    message=""
                 if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break
                 if total_count==0:
-                    mensaje_colox = deslistar(old_chat, args)
+                    mensaje_colox = deslistar(old_chat[1:], args)
                     print(mensaje_colox)
                     old_chat=""
                     response_generatoro=gpt4all_instance.generate(
@@ -365,13 +369,17 @@ def ejecutar_modelo_voice(gpt4all_instance):
                         continue
                     if running_repl == False:
                         sys.exit()
-
+                if "comando reiniciar".lower() in message.lower():
+                    total_count=7000
+                    old_chat=""
+                    print("Reiniciando manualmente, por favor espere...")
+                    message=""
                 if total_count+max_tokens+count_tokens(message)>6000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break
                 if total_count==0:
-                    mensaje_colox = deslistar(old_chat, args)
+                    mensaje_colox = deslistar(old_chat[1:], args)
                     print(mensaje_colox)
                     old_chat=""
                     response_generatoro=gpt4all_instance.generate(
