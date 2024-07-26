@@ -7,7 +7,7 @@ Ejecuta el edgetts_waifu_tools.bat para la ejecución del programa principal
 
 Ejecuta only_twitch_games si deseas ejecutar los juegos en paralelo al programa principal
 
-![image](https://github.com/akthanon/edgetts_waifu_tools/assets/94359345/843ac274-4691-49ae-a422-0c9a35635a0f)
+![image](https://github.com/user-attachments/assets/70510b04-ce27-4320-9b4d-afb8eed231f4)
 
 
 # Programas
