@@ -194,7 +194,6 @@ def ejecutar_modelo(gpt4all_instance):
         gpt4all_instancea=load_modela()
     while True:
         with gpt4all_instance.chat_session(system_prompt):
-            #print(str(gpt4all_instance.current_chat_session[0])+str(gpt4all_instance.current_chat_session[0]))
 
             while True:
                 if total_count>=count_tokens(system_prompt):
@@ -228,6 +227,7 @@ def ejecutar_modelo(gpt4all_instance):
                     total_count=7000
                     print("Reiniciando manualmente, por favor espere...")
                     message=""
+                    old_chat=""
 
                 if "comando memorizar".lower() in message.lower() and len(old_chat)>0:
                     total_count=memorizar(old_chat, gpt4all_instance, system_prompt, args)
@@ -241,15 +241,12 @@ def ejecutar_modelo(gpt4all_instance):
                     break
 
 #********************FIN PETICIONES Y COMANDOS********************
-
                 if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break
                 if total_count==0:
-                    mensaje_colox = deslistar(old_chat, args)
-                    print(old_chat)
-                    print("MENSAJE DESLISTADO: "+mensaje_colox)
+                    mensaje_colox = deslistar(old_chat[1:], args)
                     old_chat=""
                     response_generatoro=gpt4all_instance.generate(
                         mensaje_colox,
@@ -286,8 +283,6 @@ def ejecutar_modelo(gpt4all_instance):
                 chunk = ""
                 emociones =["Neutral"]
                 texto =""
-                emocion=""
-                asteriscos=""
 
                 response_text=""
                 for token in response_generator:
@@ -305,11 +300,9 @@ def ejecutar_modelo(gpt4all_instance):
 
                 tmp_emotion=[]
                 emotion=[]
-                token_max=len(response_text)
                 for token in response_text:
-                    #response.write(token)
                     chunk += token
-                    if token.endswith("\n") or token.endswith("."):
+                    if token.endswith("\n"):
                         texto, emociones = extraer_emociones(chunk)
                         if len(emociones)>0:
                             for i in emociones:

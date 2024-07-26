@@ -7,6 +7,7 @@ import threading
 import argparse
 global current_time_ms
 from funciones_tts import *
+from funciones import *
 global args
 
 # Configuración de argparse
@@ -122,27 +123,6 @@ def pngtuber(screen, screen_width, screen_height):
 global emotions_list
 emotions_list=[]
 
-
-class MessageLogger:
-    def __init__(self, filename, max_messages=1):
-        self.filename = filename
-        self.max_messages = max_messages
-        self.messages = []
-
-    def log(self, message):
-        if len(self.messages) >= self.max_messages:
-            self.messages.pop(0)
-        self.messages.append(message)
-        self.write_to_file()
-
-    def write_to_file(self):
-        with open(self.filename, 'w') as file:
-            for message in self.messages:
-                file.write(str(message) + '\n')
-
-# Crear una instancia de MessageLogger
-logger = MessageLogger("historial_chat.txt")
-
 def repl(
     model: str = args.model,
     n_threads: int = None,
@@ -160,155 +140,11 @@ def repl(
 
         num_threads = gpt4all_instance.model.thread_count()
 
-    if args.option == "otwi":
-        ejecutar_modelo(gpt4all_instance)
-    elif args.option == "vtwi":
-        ejecutar_modelo_voice(gpt4all_instance)
+    ejecutar_modelo(gpt4all_instance)
+
 
 def ejecutar_modelo(gpt4all_instance):
     global emotions_list, estado_voz, args, global_audio_path
-    emocion=["Aliviada"]
-    print("Cargando waifu...")                 
-    message_new=""
-    message_old=""
-    message=""
-    ram_message=0
-    max_tokens=200
-    system_prompt = read_system_prompt(args)+"\nLanguage: "+args.lang
-    total_count=count_tokens(system_prompt)
-    while True:
-        system_prompt = read_system_prompt(args)+"\nLanguage: "+args.lang
-        with gpt4all_instance.chat_session(system_prompt):
-            while True:
-                if total_count>=count_tokens(system_prompt):
-                    estado_voz=1
-                    message_new = read_message_from_file('messages.txt')
-                    lines_new = message_new.splitlines()
-                    lines_unique = []
-                    for line in lines_new:
-                        if line not in message_old:
-                            lines_unique.append(line)
-
-                    message_new = "\n".join(lines_unique)      # Reconstruir el mensaje sin repeticiones 
-                    message_notime = remove_timestamps(message_new)
-                    message_notime = "\n".join(message_notime)
-                    if (lines_unique) and message_notime!="":
-                        message_old = message_old+"\n"+message_new
-                        ram_message +=1
-
-                        if ram_message==2000:
-                            lines_old = message_old.splitlines()
-                            message_old = "\n".join(lines_old[len(lines_old)//2:])
-                            ram_message=0
-
-                        message= message_notime
-                    elif running_repl == True:
-                        time.sleep(1)
-                        continue
-                    if running_repl == False:
-                        sys.exit()
-                    # Check if special command and take action
-
-                    # execute chat completion and ignore the full response since
-                    # we are outputting it incrementally
-                if "comando reiniciar".lower() in message.lower():
-                    total_count=7000
-                    print("Reiniciando manualmente, por favor espere...")
-                    message=""
-                if total_count+max_tokens+count_tokens(message)>7000:
-                    print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
-                    total_count=0
-                    break
-                if total_count==0:
-                    mensaje_colox = deslistar(old_chat[1:], args)
-                    print(mensaje_colox)
-                    old_chat=""
-                    response_generatoro=gpt4all_instance.generate(
-                        mensaje_colox,
-                        max_tokens=0,
-                        temp=float(args.temp),
-                        top_k=40,
-                        top_p=0.9,
-                        min_p=0.0,
-                        repeat_penalty=float(args.reppen),
-                        repeat_last_n=64,
-                        streaming=True,
-                        )
-                    total_count=count_tokens(system_prompt)+count_tokens(mensaje_colox)
-                    response_texto=""
-                    for token in response_generatoro:
-                        response_texto+=token
-                    response_texto+="\n"
-                estado_voz=0
-                response_generator = gpt4all_instance.generate(
-                    message,
-                    max_tokens=max_tokens,
-                    temp=float(args.temp),
-                    top_k=40,
-                    top_p=0.9,
-                    min_p=0.0,
-                    repeat_penalty=float(args.reppen),
-                    repeat_last_n=max_tokens*2,
-                    n_batch=9,
-                    #n_batch=128,
-                    streaming=True,
-                    )
-                
-                chunk = ""
-                emociones =["Neutral"]
-                texto =""
-                emocion=""
-                asteriscos=""
-
-                response_text=""
-                for token in response_generator:
-                    response_text+=token
-                response_text+="\n"
-                textox, emotions_lista  = extraer_emociones(response_text)
-
-                print("LOS SEGUIDORES DICEN:")
-                print(message)
-                print("")
-                print("LA WAIFU DICE:")
-                print(response_text)
-                print("TODAS LAS EMOCIONES:", end="")
-                print(emotions_lista)
-                
-                tmp_emotion=[]
-                emotion=[]
-                token_max=len(response_text)
-
-                for token in response_text:
-                    chunk += token
-                    if token.endswith("\n"):
-                        texto, emociones = extraer_emociones(chunk)
-                        if len(emociones)>0:
-                            for i in emociones:
-                                emotion.append(i)
-                        
-                        texto=limpiar_texto(texto)
-
-                        if cadena_valida(texto):
-                            tmp_emotion+=emotion
-                            emotions_list=tmp_emotion
-                            estado_voz=0
-                            speak_text_with_edge_tts(texto, global_audio_path, args)
-                            tmp_emotion=[]
-                            emotion=[]
-                        else:
-                            tmp_emotion+=emotion
-                            emotions_list=tmp_emotion
-                            tmp_emotion=[]
-                        chunk = ""
-
-                total_count=total_count+count_tokens(message)+count_tokens(response_text)
-                old_chat=gpt4all_instance.current_chat_session
-                
-                print(f"TOKENS: {total_count}")
-
-def ejecutar_modelo_voice(gpt4all_instance):
-    global emotions_list, estado_voz, args, global_audio_path
-    emocion=["Aliviada"]
     print("Cargando waifu...")                  
     message_new=""
     message_new_games=""
@@ -318,11 +154,19 @@ def ejecutar_modelo_voice(gpt4all_instance):
     max_tokens=200
     system_prompt = read_system_prompt(args)+"\nLanguage: "+args.lang
     total_count=count_tokens(system_prompt)
+    message_recuerdo = read_message_from_file('historial_recuerdo.txt')
+    if args.request=="True":
+        gpt4all_instancea=load_modela()
     while True:
         system_prompt = read_system_prompt(args)
         with gpt4all_instance.chat_session(system_prompt):
             while True:
-                if total_count>=count_tokens(system_prompt):
+#********************CODE********************
+                if len(message_recuerdo)>0:
+                        print("*Recordando...*")
+                        message="HISTORIAL DE CONVERSACIÓN PASADA: "+message_recuerdo
+                        message_recuerdo=""
+                elif total_count>=count_tokens(system_prompt):
                     estado_voz=1
                     message_new = read_message_from_file('messages.txt')
                     message_new_games = read_message_from_file('games\\messages_game.txt')
@@ -367,20 +211,51 @@ def ejecutar_modelo_voice(gpt4all_instance):
                     elif running_repl == True:
                         time.sleep(0.5)
                         continue
+#********************PETICIONES********************  
+                    if peticiones(message) and args.request=="True":
+                        response_request = ejecutar_modeloa(gpt4all_instancea, message)
+                        if response_request != "NA":
+                            message+=".\nInformation about request: " + response_request+"\nLanguage: "+args.lang
+
                     if running_repl == False:
                         sys.exit()
+
+                    print("*Se pone a pensar*")
+#********************PETICIONES********************                    
+                    if peticiones(message) and args.request=="True":
+                        response_request = ejecutar_modeloa(gpt4all_instancea, message)
+                        if response_request != "NA":
+                            message+=".\nInformation about request: " + response_request+"\nLanguage: "+args.lang
+
+                    if running_repl == False:
+                        sys.exit()
+
+                    print("*Se pone a pensar*")
+#********************COMANDOS********************
                 if "comando reiniciar".lower() in message.lower():
                     total_count=7000
-                    old_chat=""
                     print("Reiniciando manualmente, por favor espere...")
                     message=""
-                if total_count+max_tokens+count_tokens(message)>6000:
+                    old_chat=""
+
+                if "comando memorizar".lower() in message.lower() and len(old_chat)>0:
+                    total_count=memorizar(old_chat, gpt4all_instance, system_prompt, args)
+
+                if "comando recordar".lower() in message.lower():
+                    message_recuerdo = read_message_from_file('historial_recuerdo.txt')
+                    break
+                if "comando borrar".lower() in message.lower() and len(old_chat)>0:
+                    with open("historial_recuerdo.txt", 'w') as file:
+                        file.write("")
+                    break
+
+#********************FIN PETICIONES Y COMANDOS********************
+                if total_count+max_tokens+count_tokens(message)>7000:
                     print(f"Reacomodando contexto...{total_count+max_tokens+count_tokens(message)} tokens")
                     total_count=0
                     break
                 if total_count==0:
                     mensaje_colox = deslistar(old_chat[1:], args)
-                    print(mensaje_colox)
                     old_chat=""
                     response_generatoro=gpt4all_instance.generate(
                         mensaje_colox,
@@ -398,6 +273,8 @@ def ejecutar_modelo_voice(gpt4all_instance):
                     for token in response_generatoro:
                         response_texto+=token
                     response_texto+="\n"
+                if message=="":
+                    break
                 estado_voz=0
                 response_generator = gpt4all_instance.generate(
                     message,
@@ -408,19 +285,18 @@ def ejecutar_modelo_voice(gpt4all_instance):
                     min_p=0.0,
                     repeat_penalty=float(args.reppen),
                     repeat_last_n=max_tokens*2,
+                    n_batch=9,
                     streaming=True,
                     )
                 chunk = ""
                 emociones =["Neutral"]
                 texto =""
-                emocion=""
-                asteriscos=""
 
                 response_text=""
                 for token in response_generator:
                     response_text+=token
                 response_text+="\n"
-                textox, emotions_lista  = extraer_emociones(response_text)
+                _, emotions_lista  = extraer_emociones(response_text)
 
                 print("LOS SEGUIDORES DICEN:")
                 print(message)
@@ -432,17 +308,11 @@ def ejecutar_modelo_voice(gpt4all_instance):
                 
                 tmp_emotion=[]
                 emotion=[]
-                token_futuro=""
-                cuenta_token=0
-                token_max=len(response_text)
+
                 for token in response_text:
                     chunk += token
-                    cuenta_token=cuenta_token+1
-                    if cuenta_token<token_max:
-                        token_futuro=chunk+response_text[cuenta_token]
-                    if token.endswith("\n") or token_futuro.endswith("["):
+                    if token.endswith("\n"):
                         texto, emociones = extraer_emociones(chunk)
-                        #print(chunk)
                         if len(emociones)>0:
                             for i in emociones:
                                 emotion.append(i)
@@ -452,7 +322,7 @@ def ejecutar_modelo_voice(gpt4all_instance):
                         if cadena_valida(texto):
                             tmp_emotion+=emotion
                             emotions_list=tmp_emotion
-                            estado_voz=3
+                            estado_voz=0
                             speak_text_with_edge_tts(texto, global_audio_path, args)
                             tmp_emotion=[]
                             emotion=[]
@@ -460,12 +330,11 @@ def ejecutar_modelo_voice(gpt4all_instance):
                             tmp_emotion+=emotion
                             emotions_list=tmp_emotion
                             tmp_emotion=[]
-
                         chunk = ""
-                #print(gpt4all_instance.current_chat_session)
+
                 total_count=total_count+count_tokens(message)+count_tokens(response_text)
                 old_chat=gpt4all_instance.current_chat_session
-                #logger.log(old_chat)
+                
                 print(f"TOKENS: {total_count}")
 
 if __name__ == "__main__":  

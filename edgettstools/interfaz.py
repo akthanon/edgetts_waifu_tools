@@ -37,9 +37,6 @@ def ejecutar_py(ruta_py, botones):
             "p_twitch_to_vtuber.py": ["--perso", perso, "--channel", channel, "--png", png, "--voz", voz, "--model", model, "--option",
                                       "otwi", "--lang", lang, "--request", request, "--temp", temp, "--reppen", reppen],
 
-            "p_twitch_to_Vtuber_games.py": ["--perso", perso, "--channel", channel, "--png", png, "--voz", voz, "--model", model, "--option",
-                                            "vtwi", "--lang", lang, "--request", request, "--temp", temp, "--reppen", reppen],
-
             "p_SUPREMUS.py": ["--perso", perso, "--channel", channel, "--png", png, "--voz", voz, "--model", model, "--option",
                               "vtwi", "--lang", lang, "--request", request, "--temp", temp, "--reppen", reppen],
 
@@ -159,7 +156,6 @@ archivos_py = [
     "p_talk_with_Vtuber.py",
     "p_text_with_Vtuber.py",
     "p_twitch_to_vtuber.py",
-    "p_twitch_to_Vtuber_games.py",
     "p_SUPREMUS.py",
     "p_talk_to_twitch.py",
     "p_only_twitch_games.py",
@@ -171,7 +167,6 @@ etiquetas= [
     "Talk with a PNGtuber",
     "Text with a PNGtuber",
     "Twitch AI PNGtuber",
-    "Twitch AI PNGtuber, Games",
     "Twitch AI PNGtuber, SmMo, TwVo",
     "Fake AI PNGtuber",
     "Play Videogames",

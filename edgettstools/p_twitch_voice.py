@@ -72,7 +72,6 @@ def speak_text_with_edge_tts(text):
         if os.path.exists(output_file_path):
             try:
                 play_audio(output_file_path)
-                clean_text()
             except Exception as e:
                 print(f"", end="")
         else:
@@ -81,7 +80,6 @@ def speak_text_with_edge_tts(text):
         print(f"*se hace la oidos sordos*")
 
 if __name__ == "__main__":
-    global args
     # Configurar argparse para manejar los argumentos de la línea de comandos
     parser = argparse.ArgumentParser(description="Twitch Chat Reader")
     parser.add_argument("--channel", type=str, help="Nombre del canal de Twitch")
