@@ -57,8 +57,8 @@ pygame.mixer.init()
 pygame.init()
 
 # Dimensiones de la ventana
-screen_width = 720*2
-screen_height = 405*2
+screen_width = 1440
+screen_height = 810
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Título de la ventana
@@ -76,10 +76,15 @@ audio_path = os.path.join("audios", "sonido2.wav")
 
 images=load_red_images(emotions, pngtuber_path, screen_width, screen_height)
 
+# Definir la variable global para almacenar el texto de los subtítulos
+global subtitles_text
+subtitles_text = ""
+
 # Función principal del PNGtuber
 def pngtuber(screen, screen_width, screen_height):
     global global_audio_path, estado_voz
     global current_time_ms, emotions_list, emotions, emotion
+    global subtitles_text  # Usar la variable global
 
     # Inicialización de variables
     (current_time_ms, emotions_list, current_emotion, current_frame, next_blink_time,
@@ -91,34 +96,41 @@ def pngtuber(screen, screen_width, screen_height):
 
     vertical_position = screen_height // 2
 
+    font = pygame.font.Font(None, 36)  # Fuente para los subtítulos
+
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        is_blinking, next_blink_time, blink_start_time, current_frame = handle_blinking(is_blinking, next_blink_time, blink_duration, blink_start_time, current_frame)
-        
-        from funciones_tts import current_time_ms
-        
         try:
-            sound_initialized, amplitude, current_frame, duration, estado, audio_path, sound_init=handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame, is_blinking)
-        except:
-            pass
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
 
-        if pygame.mixer.music.get_busy():
-            sound_init = True
-        else:
-            sound_init = False
-            sound_initialized = False  # Resetear la bandera cuando el sonido se detenga
+            is_blinking, next_blink_time, blink_start_time, current_frame = handle_blinking(is_blinking, next_blink_time, blink_duration, blink_start_time, current_frame)
+            
+            from funciones_tts import current_time_ms
+            
+            try:
+                sound_initialized, amplitude, current_frame, duration, estado, audio_path, sound_init=handle_audio(audio_mp3, sound_init, sound_initialized, current_time_ms, global_audio_path, duration, estado, audio_path, current_frame, is_blinking)
+            except:
+                pass
 
-        if emotions_list != last_emotions_list:
-            current_emotion, last_emotions_list = procesar_emociones(emotions_list, last_emotions_list, emotions, emotions_similar)
-        
-        is_speaking, is_blinking, current_frame, stepts_time, vertical_position, next_speak_time, blink_start_time, next_blink_time = manage_expression(amplitude, amplitude_threshold, is_speaking, is_blinking, current_frame, timey, screen_height, amplitude_sine, frequency_sine, next_blink_time, blink_start_time, blink_duration, next_speak_time, speak_duration)
+            if pygame.mixer.music.get_busy():
+                sound_init = True
+            else:
+                sound_init = False
+                sound_initialized = False  # Resetear la bandera cuando el sonido se detenga
 
-        dibujar_pantalla(screen, screen_width, screen_height, color_screen, current_emotion, current_frame, vertical_position, estado_voz, colores_bolita, images)
-        timey += framon * stepts_time
-        time.sleep(framon)
+            if emotions_list != last_emotions_list:
+                current_emotion, last_emotions_list = procesar_emociones(emotions_list, last_emotions_list, emotions, emotions_similar)
+            
+            is_speaking, is_blinking, current_frame, stepts_time, vertical_position, next_speak_time, blink_start_time, next_blink_time = manage_expression(amplitude, amplitude_threshold, is_speaking, is_blinking, current_frame, timey, screen_height, amplitude_sine, frequency_sine, next_blink_time, blink_start_time, blink_duration, next_speak_time, speak_duration)
+            
+            dibujar_pantalla_sub(screen, screen_width, screen_height, color_screen, current_emotion, current_frame, vertical_position, estado_voz, colores_bolita, images, subtitles_text)
+            
+
+            timey += framon * stepts_time
+            time.sleep(framon)
+        except Exception as e:
+            print(f"Error capturando eventos: {e}")
 
 global emotions_list
 emotions_list=[]
@@ -145,6 +157,7 @@ def repl(
 
 def ejecutar_modelo(gpt4all_instance):
     global emotions_list, estado_voz, args, global_audio_path
+    global subtitles_text  # Usar la variable global
     print("Cargando waifu...")                  
     message_new=""
     message_new_games=""
@@ -297,6 +310,8 @@ def ejecutar_modelo(gpt4all_instance):
                     response_text+=token
                 response_text+="\n"
                 _, emotions_lista  = extraer_emociones(response_text)
+
+                subtitles_text = response_text
 
                 print("LOS SEGUIDORES DICEN:")
                 print(message)

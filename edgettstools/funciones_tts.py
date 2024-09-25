@@ -129,6 +129,68 @@ def dibujar_pantalla(screen, screen_width, screen_height, color_screen, current_
 
     pygame.display.flip()
 
+def dibujar_pantalla_sub(screen, screen_width, screen_height, color_screen, current_emotion, current_frame, vertical_position, estado_voz, colores_bolita, images, subtitles=None):
+    # Dibujar fondo y PNGtuber
+    screen.fill(color_screen)
+    image = images[current_emotion][current_frame]
+    image_rect = image.get_rect(center=(screen_width // 2, vertical_position))
+    screen.blit(image, image_rect)
+
+    # Dibujar bolita de color en la esquina inferior derecha
+    color_bolita = colores_bolita.get(estado_voz, (0, 0, 0))
+    pygame.draw.circle(screen, color_bolita, (screen_width - 20, screen_height - 20), 10)
+
+    # Dibujar subtítulos si existen y son texto
+    if subtitles and isinstance(subtitles, str):  # Asegurarse de que subtitles sea texto
+        font = pygame.font.SysFont(None, 36)  # Ajusta el tamaño de la fuente según sea necesario
+        max_width = screen_width // 3  # 1/3 del ancho de la pantalla
+        lines = render_multiline_text(subtitles, font, (255, 255, 255), (0, 0, 0), max_width)  # Texto blanco con contorno negro
+
+        # Dibujar cada línea de subtítulo en la pantalla con contorno
+        y_offset = screen_height - (len(lines) * 40) - 10  # Ajustar la posición vertical inicial
+        for line in lines:
+            # Centrar el texto en la pantalla
+            line_surface = font.render(line, True, (255, 255, 255))
+            line_width = line_surface.get_width()
+            x_position = (screen_width - line_width) // 2  # Centramos horizontalmente
+
+            draw_text_with_outline(screen, line, font, (255, 255, 255), (0, 0, 0), x_position, y_offset)  # Texto con contorno negro centrado
+            y_offset += 40  # Desplazamiento vertical entre líneas
+
+    # Actualizar la pantalla
+    pygame.display.flip()
+
+def render_multiline_text(text, font, text_color, outline_color, max_width):
+    # Divide el texto en líneas si excede max_width
+    words = text.split(' ')
+    lines = []
+    current_line = []
+    for word in words:
+        current_line.append(word)
+        # Renderizar línea temporal para verificar el ancho
+        line_surface = font.render(' '.join(current_line), True, text_color)
+        if line_surface.get_width() > max_width:
+            # Si el ancho excede, agrega la línea anterior y comienza una nueva
+            current_line.pop()
+            lines.append(' '.join(current_line))
+            current_line = [word]
+    lines.append(' '.join(current_line))  # Agregar la última línea
+    return lines
+
+def draw_text_with_outline(screen, text, font, text_color, outline_color, x, y):
+    # Renderizar el texto con un contorno negro
+    text_surface = font.render(text, True, text_color)
+    outline_thickness = 2  # El grosor del contorno
+    # Dibujar contorno: desplazamiento en 8 direcciones
+    for dx, dy in [(-outline_thickness, 0), (outline_thickness, 0), (0, -outline_thickness), (0, outline_thickness),
+                   (-outline_thickness, -outline_thickness), (-outline_thickness, outline_thickness),
+                   (outline_thickness, -outline_thickness), (outline_thickness, outline_thickness)]:
+        outline_surface = font.render(text, True, outline_color)
+        screen.blit(outline_surface, (x + dx, y + dy))
+    # Dibujar el texto en sí
+    screen.blit(text_surface, (x, y))
+
+
 def manage_expression(amplitude, amplitude_threshold, is_speaking, is_blinking, current_frame, timey, screen_height, amplitude_sine, frequency_sine, next_blink_time, blink_start_time, blink_duration, next_speak_time, speak_duration):
 
     if amplitude > amplitude_threshold:
